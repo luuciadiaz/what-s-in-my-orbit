@@ -15,6 +15,7 @@
 import type { Metadata, Viewport } from "next";
 import { rootCssVars } from "@/config/tokens";
 import { hero } from "@/content/hero";
+import { Cursor } from "@/ui/cursor/Cursor";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -73,6 +74,7 @@ export default function RootLayout({
         {/* Screen-reader orientation — the visual layer is near-silent by design. */}
         <p className="sr-only">{hero.srIntro}</p>
         {children}
+        <Cursor />
       </body>
     </html>
   );

@@ -15,6 +15,7 @@ import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { PlanetConfig } from "@/config/planets";
 import { registerPlanet, unregisterPlanet } from "@/state/atlasStore";
+import { setHovering } from "@/state/cursorStore";
 import {
   planetVertex,
   planetFragment,
@@ -96,11 +97,11 @@ export function Planet({ config, hovered, reducedMotion, paused, onHover, onSele
               onPointerOver={(e) => {
                 e.stopPropagation();
                 onHover(config.slug);
-                document.body.style.cursor = "pointer";
+                setHovering(true);
               }}
               onPointerOut={() => {
                 onHover(null);
-                document.body.style.cursor = "auto";
+                setHovering(false);
               }}
               onClick={(e) => {
                 e.stopPropagation();

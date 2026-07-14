@@ -96,6 +96,16 @@
   }
 }
 
+/* Astrolabe cursor tick-ring rotation. */
+@keyframes astrolabe-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /*
  * REDUCED MOTION
  * A first-class calm path, not merely disabled animation. Ambient loops stop,

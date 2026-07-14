@@ -17,6 +17,7 @@ import { palette } from "@/config/colors";
 import { svgTexture } from "@/three/lib/svgTexture";
 import { sunBodySvg, sunFaceSvg } from "@/three/art/sunArt";
 import { registerPlanet, unregisterPlanet } from "@/state/atlasStore";
+import { setHovering } from "@/state/cursorStore";
 
 interface SunProps {
   config: PlanetConfig;
@@ -67,11 +68,11 @@ export function Sun({ config, hovered, reducedMotion, paused, onHover, onSelect 
           onPointerOver={(e) => {
             e.stopPropagation();
             onHover(config.slug);
-            document.body.style.cursor = "pointer";
+            setHovering(true);
           }}
           onPointerOut={() => {
             onHover(null);
-            document.body.style.cursor = "auto";
+            setHovering(false);
           }}
           onClick={(e) => {
             e.stopPropagation();
