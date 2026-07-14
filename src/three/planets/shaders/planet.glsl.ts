@@ -63,6 +63,19 @@ export const planetFragment = /* glsl */ `
     float line = 1.0 - smoothstep(0.0, 0.02, min(gd.x, gd.y));
     base += uGlow * line * 0.18;
 
+    // A brighter engraved equator band, like a celestial globe's ecliptic.
+    float eq = 1.0 - smoothstep(0.0, 0.012, abs(vUv.y - 0.5));
+    base += uGlow * eq * 0.35;
+
+    // Gold star-specks scattered across the surface — celestial engraving.
+    vec2 sc = vUv * vec2(42.0, 22.0);
+    vec2 cell = floor(sc);
+    float rnd = hash(cell);
+    float speck = step(0.955, rnd);
+    vec2 fc = fract(sc) - 0.5;
+    float dotm = 1.0 - smoothstep(0.0, 0.16, length(fc));
+    base += uGlow * speck * dotm * 0.7;
+
     // Fresnel atmosphere rim.
     float fres = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.5);
     base += uGlow * fres * 0.9;

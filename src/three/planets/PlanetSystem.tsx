@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { PLANETS } from "@/config/planets";
 import { Planet } from "./Planet";
+import { Sun } from "./Sun";
 
 interface PlanetSystemProps {
   reducedMotion: boolean;
@@ -22,16 +23,20 @@ export function PlanetSystem({ reducedMotion, onSelect }: PlanetSystemProps) {
 
   return (
     <group>
-      {PLANETS.map((config) => (
-        <Planet
-          key={config.slug}
-          config={config}
-          hovered={hovered === config.slug}
-          reducedMotion={reducedMotion}
-          onHover={setHovered}
-          onSelect={onSelect}
-        />
-      ))}
+      {PLANETS.map((config) => {
+        const shared = {
+          config,
+          hovered: hovered === config.slug,
+          reducedMotion,
+          onHover: setHovered,
+          onSelect,
+        };
+        return config.isCenter ? (
+          <Sun key={config.slug} {...shared} />
+        ) : (
+          <Planet key={config.slug} {...shared} />
+        );
+      })}
     </group>
   );
 }
