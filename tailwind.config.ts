@@ -6,7 +6,13 @@
  * keeps a single source of truth — utilities and tokens can never drift apart.
  */
 import type { Config } from "tailwindcss";
-import { fontFamilies } from "./src/config/fonts";
+import {
+  fontFamilies,
+  fontSize,
+  lineHeight,
+  letterSpacing,
+  fontWeight,
+} from "./src/config/fonts";
 import { breakpoints, spacing, container, radius } from "./src/config/layout";
 
 const config: Config = {
@@ -37,6 +43,11 @@ const config: Config = {
         body: [`var(${fontFamilies.body.var})`],
         caption: [`var(${fontFamilies.caption.var})`],
       },
+      // The type scale — wired from config/fonts.ts so `text-*` utilities exist.
+      fontSize,
+      lineHeight,
+      letterSpacing,
+      fontWeight,
       spacing,
       maxWidth: container,
       borderRadius: radius,
