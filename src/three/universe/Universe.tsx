@@ -24,10 +24,11 @@ import { CvArtifact } from "@/three/artifacts/CvArtifact";
 interface UniverseProps {
   budget: TierBudget;
   reducedMotion: boolean;
+  coarse: boolean;
   onSelect: (slug: string) => void;
 }
 
-export function Universe({ budget, reducedMotion, onSelect }: UniverseProps) {
+export function Universe({ budget, reducedMotion, coarse, onSelect }: UniverseProps) {
   const pixelRatio = Math.min(useThree((s) => s.viewport.dpr), budget.maxDpr);
 
   return (
@@ -39,8 +40,8 @@ export function Universe({ budget, reducedMotion, onSelect }: UniverseProps) {
       <ConstellationFigures />
       <ZodiacWheel reducedMotion={reducedMotion} />
       <OrbitLines />
-      <PlanetSystem reducedMotion={reducedMotion} onSelect={onSelect} />
-      <AsteroidBelt reducedMotion={reducedMotion} />
+      <PlanetSystem reducedMotion={reducedMotion} coarse={coarse} budget={budget} onSelect={onSelect} />
+      <AsteroidBelt reducedMotion={reducedMotion} budget={budget} />
       <CvArtifact reducedMotion={reducedMotion} />
     </group>
   );

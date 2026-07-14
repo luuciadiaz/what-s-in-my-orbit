@@ -22,14 +22,14 @@ import { audioEngine } from "@/audio/AudioEngine";
 
 interface SunProps {
   config: PlanetConfig;
-  hovered: boolean;
+  active: boolean;
   reducedMotion: boolean;
   paused: boolean;
   onHover: (slug: string | null) => void;
-  onSelect: (slug: string) => void;
+  onActivate: (slug: string) => void;
 }
 
-export function Sun({ config, hovered, reducedMotion, paused, onHover, onSelect }: SunProps) {
+export function Sun({ config, active, reducedMotion, paused, onHover, onActivate }: SunProps) {
   const bodyRef = useRef<THREE.Mesh>(null);
   const swellRef = useRef<THREE.Group>(null);
 
@@ -55,7 +55,7 @@ export function Sun({ config, hovered, reducedMotion, paused, onHover, onSelect 
       bodyRef.current.rotation.z += delta * 0.05; // slow corona turn
     }
     if (swellRef.current) {
-      const t = hovered ? 1.08 : 1;
+      const t = active ? 1.08 : 1;
       swellRef.current.scale.lerp(new THREE.Vector3(t, t, t), 0.1);
     }
   });
@@ -78,7 +78,7 @@ export function Sun({ config, hovered, reducedMotion, paused, onHover, onSelect 
           }}
           onClick={(e) => {
             e.stopPropagation();
-            onSelect(config.slug);
+            onActivate(config.slug);
           }}
         >
           <planeGeometry args={[size, size]} />
@@ -91,7 +91,7 @@ export function Sun({ config, hovered, reducedMotion, paused, onHover, onSelect 
           <meshBasicMaterial map={faceTex} transparent depthWrite={false} toneMapped={false} />
         </mesh>
 
-        {hovered ? (
+        {active ? (
           <Html center distanceFactor={18} position={[0, config.radius + 2.4, 0]} pointerEvents="none">
             <div className="pointer-events-none select-none whitespace-nowrap text-center">
               <div className="font-display text-[2.6rem] leading-none text-gold">

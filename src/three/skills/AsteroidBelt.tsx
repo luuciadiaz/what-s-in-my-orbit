@@ -14,6 +14,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { skills } from "@/content/skills";
 import { palette } from "@/config/colors";
+import type { TierBudget } from "@/hooks/useDeviceTier";
 import { SeededRandom } from "@/lib/seededRandom";
 import { useAtlas } from "@/state/atlasStore";
 import { Asteroid } from "./Asteroid";
@@ -22,14 +23,15 @@ const BELT_RADIUS = 16.5;
 const BELT_TILT = 0.2;
 const RADIUS_JITTER = 1.8;
 const Y_JITTER = 1.3;
-const DECOR_COUNT = 70;
 const BELT_SPEED = 0.012;
+const DECOR_BY_TIER: Record<TierBudget["tier"], number> = { low: 24, medium: 48, high: 70 };
 
-export function AsteroidBelt({ reducedMotion }: { reducedMotion: boolean }) {
+export function AsteroidBelt({ reducedMotion, budget }: { reducedMotion: boolean; budget: TierBudget }) {
   const rotRef = useRef<THREE.Group>(null);
   const instRef = useRef<THREE.InstancedMesh>(null);
   const { phase } = useAtlas();
   const paused = phase !== "idle";
+  const decorCount = DECOR_BY_TIER[budget.tier];
 
   // Named skill asteroids, evenly spread with a little seeded jitter.
   const rng = useMemo(() => new SeededRandom(90210), []);
@@ -49,7 +51,7 @@ export function AsteroidBelt({ reducedMotion }: { reducedMotion: boolean }) {
 
   // Decorative scatter (instanced, non-interactive).
   const decor = useMemo(() => {
-    return Array.from({ length: DECOR_COUNT }).map(() => {
+    return Array.from({ length: decorCount }).map(() => {
       const a = rng.range(0, Math.PI * 2);
       const radius = BELT_RADIUS + rng.signed(RADIUS_JITTER + 0.6);
       return {
@@ -58,7 +60,7 @@ export function AsteroidBelt({ reducedMotion }: { reducedMotion: boolean }) {
         rot: new THREE.Euler(rng.range(0, 6.28), rng.range(0, 6.28), rng.range(0, 6.28)),
       };
     });
-  }, [rng]);
+  }, [rng, decorCount]);
 
   useLayoutEffect(() => {
     if (!instRef.current) return;
@@ -90,7 +92,7 @@ export function AsteroidBelt({ reducedMotion }: { reducedMotion: boolean }) {
           <Asteroid key={a.name} {...a} reducedMotion={reducedMotion} />
         ))}
 
-        <instancedMesh ref={instRef} args={[undefined, undefined, DECOR_COUNT]}>
+        <instancedMesh ref={instRef} args={[undefined, undefined, decorCount]}>
           <icosahedronGeometry args={[1, 0]} />
           <meshStandardMaterial color={palette.copper} flatShading roughness={0.95} metalness={0.1} />
         </instancedMesh>

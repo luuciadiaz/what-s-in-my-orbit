@@ -27,15 +27,18 @@ import { PlanetRing } from "./PlanetRing";
 
 interface PlanetProps {
   config: PlanetConfig;
-  hovered: boolean;
+  /** Revealed: hovered (fine pointer) or focused by first tap (coarse). */
+  active: boolean;
   reducedMotion: boolean;
   /** When true (a world is being entered), orbital motion freezes. */
   paused: boolean;
+  /** Sphere tessellation, scaled to the device tier. */
+  segments: number;
   onHover: (slug: string | null) => void;
-  onSelect: (slug: string) => void;
+  onActivate: (slug: string) => void;
 }
 
-export function Planet({ config, hovered, reducedMotion, paused, onHover, onSelect }: PlanetProps) {
+export function Planet({ config, active, reducedMotion, paused, segments, onHover, onActivate }: PlanetProps) {
   const revolveRef = useRef<THREE.Group>(null);
   const bodyRef = useRef<THREE.Mesh>(null);
   const swellRef = useRef<THREE.Group>(null);
@@ -80,9 +83,9 @@ export function Planet({ config, hovered, reducedMotion, paused, onHover, onSele
       if (bodyRef.current) bodyRef.current.rotation.y += delta * config.spinSpeed;
     }
 
-    // Gentle swell on hover.
+    // Gentle swell when revealed.
     if (swellRef.current) {
-      const target = hovered ? 1.12 : 1;
+      const target = active ? 1.12 : 1;
       swellRef.current.scale.lerp(new THREE.Vector3(target, target, target), 0.12);
     }
   });
@@ -107,10 +110,10 @@ export function Planet({ config, hovered, reducedMotion, paused, onHover, onSele
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                onSelect(config.slug);
+                onActivate(config.slug);
               }}
             >
-              <sphereGeometry args={[config.radius, 48, 48]} />
+              <sphereGeometry args={[config.radius, segments, segments]} />
               <shaderMaterial
                 vertexShader={planetVertex}
                 fragmentShader={planetFragment}
@@ -120,7 +123,7 @@ export function Planet({ config, hovered, reducedMotion, paused, onHover, onSele
 
             {/* Atmosphere halo */}
             <mesh scale={1.18}>
-              <sphereGeometry args={[config.radius, 32, 32]} />
+              <sphereGeometry args={[config.radius, Math.max(16, Math.round(segments * 0.7)), Math.max(16, Math.round(segments * 0.7))]} />
               <shaderMaterial
                 vertexShader={atmosphereVertex}
                 fragmentShader={atmosphereFragment}
@@ -134,8 +137,8 @@ export function Planet({ config, hovered, reducedMotion, paused, onHover, onSele
 
             {config.hasRing ? <PlanetRing config={config} /> : null}
 
-            {/* Hover label — minimal: glyph + discipline. */}
-            {hovered ? (
+            {/* Reveal label — minimal: glyph + discipline. */}
+            {active ? (
               <Html center distanceFactor={18} position={[0, config.radius + 0.9, 0]} pointerEvents="none">
                 <div className="pointer-events-none select-none whitespace-nowrap text-center">
                   <div className="font-display text-[2.6rem] leading-none text-gold">

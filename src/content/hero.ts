@@ -9,8 +9,10 @@
 export const hero = {
   /** The question that names the whole atlas. */
   title: "What's in my Orbit?",
-  /** The only instruction the visitor receives. */
+  /** The only instruction the visitor receives (desktop). */
   invitation: "Drag to explore",
+  /** Touch-device variant. */
+  invitationTouch: "Touch to explore",
   /**
    * Screen-reader-only orientation. The visual layer says almost nothing;
    * assistive tech gets a real sentence so the experience is never opaque.

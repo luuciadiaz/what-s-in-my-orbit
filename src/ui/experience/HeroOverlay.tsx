@@ -10,9 +10,11 @@
  */
 import { useEffect, useState } from "react";
 import { hero } from "@/content/hero";
+import { useCoarsePointer } from "@/hooks/useCoarsePointer";
 
 export function HeroOverlay() {
   const [visible, setVisible] = useState(true);
+  const coarse = useCoarsePointer();
 
   useEffect(() => {
     const dismiss = () => setVisible(false);
@@ -42,7 +44,7 @@ export function HeroOverlay() {
         {hero.title}
       </h1>
       <p className="mt-6 font-caption text-small uppercase tracking-[0.28em] text-gold">
-        {hero.invitation}
+        {coarse ? hero.invitationTouch : hero.invitation}
       </p>
     </div>
   );

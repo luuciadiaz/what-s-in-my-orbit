@@ -18,6 +18,7 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useDeviceTier } from "@/hooks/useDeviceTier";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useCoarsePointer } from "@/hooks/useCoarsePointer";
 import { palette } from "@/config/colors";
 import { Universe } from "@/three/universe/Universe";
 import { CameraDirector } from "./CameraDirector";
@@ -32,6 +33,7 @@ function selectWorld(slug: string) {
 export default function SceneCanvas() {
   const budget = useDeviceTier();
   const reducedMotion = useReducedMotion();
+  const coarse = useCoarsePointer();
 
   return (
     <Canvas
@@ -44,7 +46,7 @@ export default function SceneCanvas() {
         scene.fog = new THREE.FogExp2(new THREE.Color(palette.midnightDeep), 0.006);
       }}
     >
-      <Universe budget={budget} reducedMotion={reducedMotion} onSelect={selectWorld} />
+      <Universe budget={budget} reducedMotion={reducedMotion} coarse={coarse} onSelect={selectWorld} />
       <CameraDirector reducedMotion={reducedMotion} />
 
       <OrbitControls
