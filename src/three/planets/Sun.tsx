@@ -8,7 +8,7 @@
  * behaves like any world — hover reveals it, click enters Origin — but reads as
  * the luminous heart the whole atlas orbits.
  */
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Billboard, Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -16,18 +16,26 @@ import type { PlanetConfig } from "@/config/planets";
 import { palette } from "@/config/colors";
 import { svgTexture } from "@/three/lib/svgTexture";
 import { sunBodySvg, sunFaceSvg } from "@/three/art/sunArt";
+import { registerPlanet, unregisterPlanet } from "@/state/atlasStore";
 
 interface SunProps {
   config: PlanetConfig;
   hovered: boolean;
   reducedMotion: boolean;
+  paused: boolean;
   onHover: (slug: string | null) => void;
   onSelect: (slug: string) => void;
 }
 
-export function Sun({ config, hovered, reducedMotion, onHover, onSelect }: SunProps) {
+export function Sun({ config, hovered, reducedMotion, paused, onHover, onSelect }: SunProps) {
   const bodyRef = useRef<THREE.Mesh>(null);
   const swellRef = useRef<THREE.Group>(null);
+
+  useEffect(() => {
+    const node = swellRef.current;
+    if (node) registerPlanet(config.slug, node);
+    return () => unregisterPlanet(config.slug);
+  }, [config.slug]);
 
   const colors = {
     gold: palette.gold,
@@ -41,7 +49,7 @@ export function Sun({ config, hovered, reducedMotion, onHover, onSelect }: SunPr
   const size = config.radius * 3.7;
 
   useFrame((_, delta) => {
-    if (!reducedMotion && bodyRef.current) {
+    if (!reducedMotion && !paused && bodyRef.current) {
       bodyRef.current.rotation.z += delta * 0.05; // slow corona turn
     }
     if (swellRef.current) {

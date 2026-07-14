@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { HeroOverlay } from "./HeroOverlay";
 import { AtlasGrade } from "./AtlasGrade";
+import { ProjectReveal } from "./ProjectReveal";
 
 const SceneCanvas = dynamic(() => import("@/three/core/SceneCanvas"), { ssr: false });
 
@@ -53,6 +54,7 @@ export function Experience() {
       </div>
       <AtlasGrade />
       <HeroOverlay />
+      <ProjectReveal />
     </>
   );
 }

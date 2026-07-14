@@ -9,11 +9,12 @@
  * the atmosphere halo. Hovering swells the world gently and raises a label;
  * clicking enters it. All motion halts under reduced motion.
  */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { PlanetConfig } from "@/config/planets";
+import { registerPlanet, unregisterPlanet } from "@/state/atlasStore";
 import {
   planetVertex,
   planetFragment,
@@ -26,16 +27,25 @@ interface PlanetProps {
   config: PlanetConfig;
   hovered: boolean;
   reducedMotion: boolean;
+  /** When true (a world is being entered), orbital motion freezes. */
+  paused: boolean;
   onHover: (slug: string | null) => void;
   onSelect: (slug: string) => void;
 }
 
-export function Planet({ config, hovered, reducedMotion, onHover, onSelect }: PlanetProps) {
+export function Planet({ config, hovered, reducedMotion, paused, onHover, onSelect }: PlanetProps) {
   const revolveRef = useRef<THREE.Group>(null);
   const bodyRef = useRef<THREE.Mesh>(null);
   const swellRef = useRef<THREE.Group>(null);
   const camera = useThree((s) => s.camera);
   const [angle] = useState(config.startAngle);
+
+  // Publish this world's live object so the camera director can fly to it.
+  useEffect(() => {
+    const node = swellRef.current;
+    if (node) registerPlanet(config.slug, node);
+    return () => unregisterPlanet(config.slug);
+  }, [config.slug]);
 
   const surfaceUniforms = useMemo(
     () => ({
@@ -55,14 +65,15 @@ export function Planet({ config, hovered, reducedMotion, onHover, onSelect }: Pl
     [config.colorGlow],
   );
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     surfaceUniforms.uCameraPos.value.copy(camera.position);
     atmoUniforms.uCameraPos.value.copy(camera.position);
 
-    if (!reducedMotion) {
+    if (!reducedMotion && !paused) {
       surfaceUniforms.uTime.value += delta;
+      // Incremental so pausing/resuming never causes an orbital jump.
       if (revolveRef.current && config.orbitRadius > 0) {
-        revolveRef.current.rotation.y = angle + state.clock.elapsedTime * config.orbitSpeed;
+        revolveRef.current.rotation.y += delta * config.orbitSpeed;
       }
       if (bodyRef.current) bodyRef.current.rotation.y += delta * config.spinSpeed;
     }
@@ -76,7 +87,7 @@ export function Planet({ config, hovered, reducedMotion, onHover, onSelect }: Pl
 
   return (
     <group rotation={[config.orbitTilt, 0, 0]}>
-      <group ref={revolveRef}>
+      <group ref={revolveRef} rotation={[0, angle, 0]}>
         <group position={[config.orbitRadius, 0, 0]}>
           <group ref={swellRef}>
             {/* Body */}

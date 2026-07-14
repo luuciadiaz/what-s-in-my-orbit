@@ -13,8 +13,6 @@
  * the main React tree, then passed into the scene so router context survives the
  * WebGL reconciler boundary.
  */
-import { useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -22,17 +20,12 @@ import { useDeviceTier } from "@/hooks/useDeviceTier";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { palette } from "@/config/colors";
 import { Universe } from "@/three/universe/Universe";
+import { CameraDirector } from "./CameraDirector";
+import { enterPlanet } from "@/state/atlasStore";
 
 export default function SceneCanvas() {
   const budget = useDeviceTier();
   const reducedMotion = useReducedMotion();
-  const router = useRouter();
-
-  // Created in the main tree so Next's router context is intact when invoked.
-  const handleSelect = useCallback(
-    (slug: string) => router.push(`/orbit/${slug}`),
-    [router],
-  );
 
   return (
     <Canvas
@@ -45,7 +38,8 @@ export default function SceneCanvas() {
         scene.fog = new THREE.FogExp2(new THREE.Color(palette.midnightDeep), 0.006);
       }}
     >
-      <Universe budget={budget} reducedMotion={reducedMotion} onSelect={handleSelect} />
+      <Universe budget={budget} reducedMotion={reducedMotion} onSelect={enterPlanet} />
+      <CameraDirector reducedMotion={reducedMotion} />
 
       <OrbitControls
         makeDefault

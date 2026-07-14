@@ -10,6 +10,7 @@
  */
 import { useState } from "react";
 import { PLANETS } from "@/config/planets";
+import { useAtlas } from "@/state/atlasStore";
 import { Planet } from "./Planet";
 import { Sun } from "./Sun";
 
@@ -20,6 +21,9 @@ interface PlanetSystemProps {
 
 export function PlanetSystem({ reducedMotion, onSelect }: PlanetSystemProps) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const { phase } = useAtlas();
+  // While entering/active/leaving a world, freeze orbital drift.
+  const paused = phase !== "idle";
 
   return (
     <group>
@@ -28,6 +32,7 @@ export function PlanetSystem({ reducedMotion, onSelect }: PlanetSystemProps) {
           config,
           hovered: hovered === config.slug,
           reducedMotion,
+          paused,
           onHover: setHovered,
           onSelect,
         };
