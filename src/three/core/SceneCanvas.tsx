@@ -22,6 +22,12 @@ import { palette } from "@/config/colors";
 import { Universe } from "@/three/universe/Universe";
 import { CameraDirector } from "./CameraDirector";
 import { enterPlanet } from "@/state/atlasStore";
+import { audioEngine } from "@/audio/AudioEngine";
+
+function selectWorld(slug: string) {
+  audioEngine.select(slug);
+  enterPlanet(slug);
+}
 
 export default function SceneCanvas() {
   const budget = useDeviceTier();
@@ -38,7 +44,7 @@ export default function SceneCanvas() {
         scene.fog = new THREE.FogExp2(new THREE.Color(palette.midnightDeep), 0.006);
       }}
     >
-      <Universe budget={budget} reducedMotion={reducedMotion} onSelect={enterPlanet} />
+      <Universe budget={budget} reducedMotion={reducedMotion} onSelect={selectWorld} />
       <CameraDirector reducedMotion={reducedMotion} />
 
       <OrbitControls

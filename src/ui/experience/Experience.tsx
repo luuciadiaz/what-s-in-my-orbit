@@ -17,6 +17,7 @@ import dynamic from "next/dynamic";
 import { HeroOverlay } from "./HeroOverlay";
 import { AtlasGrade } from "./AtlasGrade";
 import { ProjectReveal } from "./ProjectReveal";
+import { SoundToggle } from "@/ui/sound/SoundToggle";
 
 const SceneCanvas = dynamic(() => import("@/three/core/SceneCanvas"), { ssr: false });
 
@@ -55,6 +56,7 @@ export function Experience() {
       <AtlasGrade />
       <HeroOverlay />
       <ProjectReveal />
+      <SoundToggle />
     </>
   );
 }

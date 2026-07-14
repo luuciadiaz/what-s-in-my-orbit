@@ -12,8 +12,15 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAtlas, leavePlanet } from "@/state/atlasStore";
+import { audioEngine } from "@/audio/AudioEngine";
 import { projectBySlug } from "@/content/projects";
 import { about } from "@/content/about";
+
+/** Return to the atlas with its gentle audio cue. */
+function returnToAtlas() {
+  audioEngine.back();
+  leavePlanet();
+}
 
 interface RevealContent {
   discipline: string;
@@ -62,7 +69,7 @@ export function ProjectReveal() {
     if (phase !== "active") return;
     returnRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") leavePlanet();
+      if (e.key === "Escape") returnToAtlas();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -92,7 +99,7 @@ export function ProjectReveal() {
       {/* Return */}
       <button
         ref={returnRef}
-        onClick={() => leavePlanet()}
+        onClick={returnToAtlas}
         className="pointer-events-auto absolute left-[var(--gutter-inline)] top-8 font-caption text-small uppercase tracking-[0.24em] text-ink-soft transition-opacity duration-slow hover:text-gold focus-visible:text-gold"
         style={{ opacity: visible ? 1 : 0 }}
       >

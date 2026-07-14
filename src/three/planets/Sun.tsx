@@ -18,6 +18,7 @@ import { svgTexture } from "@/three/lib/svgTexture";
 import { sunBodySvg, sunFaceSvg } from "@/three/art/sunArt";
 import { registerPlanet, unregisterPlanet } from "@/state/atlasStore";
 import { setHovering } from "@/state/cursorStore";
+import { audioEngine } from "@/audio/AudioEngine";
 
 interface SunProps {
   config: PlanetConfig;
@@ -69,6 +70,7 @@ export function Sun({ config, hovered, reducedMotion, paused, onHover, onSelect 
             e.stopPropagation();
             onHover(config.slug);
             setHovering(true);
+            audioEngine.hover();
           }}
           onPointerOut={() => {
             onHover(null);

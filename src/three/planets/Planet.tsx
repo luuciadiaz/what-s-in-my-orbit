@@ -16,6 +16,7 @@ import * as THREE from "three";
 import type { PlanetConfig } from "@/config/planets";
 import { registerPlanet, unregisterPlanet } from "@/state/atlasStore";
 import { setHovering } from "@/state/cursorStore";
+import { audioEngine } from "@/audio/AudioEngine";
 import {
   planetVertex,
   planetFragment,
@@ -98,6 +99,7 @@ export function Planet({ config, hovered, reducedMotion, paused, onHover, onSele
                 e.stopPropagation();
                 onHover(config.slug);
                 setHovering(true);
+                audioEngine.hover();
               }}
               onPointerOut={() => {
                 onHover(null);
