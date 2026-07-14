@@ -77,6 +77,7 @@ export const layoutCssVars: Record<string, string> = {
   "--container-prose": container.prose,
   "--container-content": container.content,
   "--z-canvas": String(zLayer.canvas),
+  "--z-scene": String(zLayer.scene),
   "--z-content": String(zLayer.content),
   "--z-hud": String(zLayer.hud),
   "--z-loader": String(zLayer.loader),

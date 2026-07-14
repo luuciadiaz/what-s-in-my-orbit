@@ -1,58 +1,41 @@
 "use client";
 
 /**
- * OrbitLines — golden rings that structure the void.
+ * OrbitLines — the golden tracks the planets travel.
  *
- * Concentric elliptical paths, each gently tilted, drawn as thin gold lines.
- * In later phases these become the tracks the planets travel; here they are the
- * quiet geometry that tells the eye this space is composed, not empty. They
- * rotate almost imperceptibly (frozen under reduced motion).
+ * One ring per orbiting world, derived directly from the planet config so a
+ * planet always sits ON its line. Each ring inherits its planet's orbital tilt.
+ * Thin gold, faint, near-imperceptibly alive — the structure that tells the eye
+ * this space is composed, not empty.
  */
-import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useMemo } from "react";
 import * as THREE from "three";
 import { palette } from "@/config/colors";
+import { PLANETS } from "@/config/planets";
 
-interface OrbitLinesProps {
-  reducedMotion: boolean;
-}
+const SEGMENTS = 240;
 
-/** Each ring: semi-major radius, eccentricity, tilt, and drift speed. */
-const RINGS = [
-  { radius: 8, ecc: 0.12, tilt: 0.5, speed: 0.02, opacity: 0.5 },
-  { radius: 13, ecc: 0.08, tilt: 0.42, speed: 0.014, opacity: 0.38 },
-  { radius: 19, ecc: 0.16, tilt: 0.6, speed: 0.01, opacity: 0.28 },
-  { radius: 26, ecc: 0.1, tilt: 0.38, speed: 0.007, opacity: 0.2 },
-];
-
-const SEGMENTS = 220;
-
-function Ring({ ring, reducedMotion }: { ring: (typeof RINGS)[number]; reducedMotion: boolean }) {
-  const ref = useRef<THREE.LineLoop>(null);
-
+function Ring({ radius, tilt }: { radius: number; tilt: number }) {
   const geometry = useMemo(() => {
-    const b = ring.radius * (1 - ring.ecc); // semi-minor from eccentricity
     const pts: number[] = [];
     for (let i = 0; i <= SEGMENTS; i++) {
       const t = (i / SEGMENTS) * Math.PI * 2;
-      pts.push(Math.cos(t) * ring.radius, 0, Math.sin(t) * b);
+      pts.push(Math.cos(t) * radius, 0, Math.sin(t) * radius);
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
     return geo;
-  }, [ring]);
+  }, [radius]);
 
-  useFrame((_, delta) => {
-    if (reducedMotion || !ref.current) return;
-    ref.current.rotation.y += delta * ring.speed;
-  });
+  // Fainter as rings grow, so the composition recedes into depth.
+  const opacity = Math.max(0.12, 0.5 - radius * 0.012);
 
   return (
-    <lineLoop ref={ref} geometry={geometry} rotation={[ring.tilt, 0, 0]}>
+    <lineLoop geometry={geometry} rotation={[tilt, 0, 0]}>
       <lineBasicMaterial
         color={palette.gold}
         transparent
-        opacity={ring.opacity}
+        opacity={opacity}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -60,11 +43,12 @@ function Ring({ ring, reducedMotion }: { ring: (typeof RINGS)[number]; reducedMo
   );
 }
 
-export function OrbitLines({ reducedMotion }: OrbitLinesProps) {
+export function OrbitLines() {
+  const rings = PLANETS.filter((p) => p.orbitRadius > 0);
   return (
     <group>
-      {RINGS.map((ring, i) => (
-        <Ring key={i} ring={ring} reducedMotion={reducedMotion} />
+      {rings.map((p) => (
+        <Ring key={p.slug} radius={p.orbitRadius} tilt={p.orbitTilt} />
       ))}
     </group>
   );

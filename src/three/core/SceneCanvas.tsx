@@ -1,48 +1,65 @@
 "use client";
 
 /**
- * SceneCanvas — the WebGL root.
+ * SceneCanvas — the WebGL root and the interactive camera.
  *
- * Owns renderer configuration and scales it to the device tier: DPR is clamped,
- * antialiasing and heavy work are reserved for capable hardware, and under
- * reduced motion the render loop switches to on-demand so a still sky costs
- * almost nothing. Background and fog are pulled from the palette so the void is
- * deep midnight — never pure black.
+ * The camera IS the experience: OrbitControls give cinematic drag / trackpad /
+ * touch orbiting with damping (momentum) and pinch-zoom, bounded so the visitor
+ * can roam but never fall out of the atlas or lose the centre. At rest the whole
+ * sky rotates almost imperceptibly (auto-rotate) — "the universe slowly moves".
+ * Under reduced motion, auto-rotation stops and the loop renders on demand.
  *
- * This component is dynamically imported with `ssr: false` by the Experience
- * wrapper: WebGL never runs on the server, and the accessible DOM shell renders
- * regardless of whether this ever mounts.
+ * Renderer settings scale to the device tier. Navigation is resolved here, in
+ * the main React tree, then passed into the scene so router context survives the
+ * WebGL reconciler boundary.
  */
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useDeviceTier } from "@/hooks/useDeviceTier";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { palette } from "@/config/colors";
 import { Universe } from "@/three/universe/Universe";
-import { AmbientCamera } from "./AmbientCamera";
 
 export default function SceneCanvas() {
   const budget = useDeviceTier();
   const reducedMotion = useReducedMotion();
+  const router = useRouter();
+
+  // Created in the main tree so Next's router context is intact when invoked.
+  const handleSelect = useCallback(
+    (slug: string) => router.push(`/orbit/${slug}`),
+    [router],
+  );
 
   return (
     <Canvas
       dpr={[1, budget.maxDpr]}
       frameloop={reducedMotion ? "demand" : "always"}
-      camera={{ position: [0, 0, 12], fov: 55, near: 0.1, far: 200 }}
-      gl={{
-        antialias: budget.tier === "high",
-        alpha: false,
-        powerPreference: "high-performance",
-      }}
+      camera={{ position: [0, 6, 30], fov: 55, near: 0.1, far: 300 }}
+      gl={{ antialias: budget.tier === "high", alpha: false, powerPreference: "high-performance" }}
       onCreated={({ gl, scene }) => {
         gl.setClearColor(new THREE.Color(palette.midnight), 1);
-        // Fog deepens the void and hides the far edge of the star shell.
-        scene.fog = new THREE.FogExp2(new THREE.Color(palette.midnightDeep), 0.008);
+        scene.fog = new THREE.FogExp2(new THREE.Color(palette.midnightDeep), 0.006);
       }}
     >
-      <AmbientCamera reducedMotion={reducedMotion} />
-      <Universe budget={budget} reducedMotion={reducedMotion} />
+      <Universe budget={budget} reducedMotion={reducedMotion} onSelect={handleSelect} />
+
+      <OrbitControls
+        makeDefault
+        enablePan={false}
+        enableDamping
+        dampingFactor={0.06}
+        rotateSpeed={0.45}
+        zoomSpeed={0.7}
+        minDistance={5}
+        maxDistance={60}
+        autoRotate={!reducedMotion}
+        autoRotateSpeed={0.18}
+        target={[0, 0, 0]}
+      />
     </Canvas>
   );
 }

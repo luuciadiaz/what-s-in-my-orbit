@@ -1,25 +1,23 @@
 "use client";
 
 /**
- * Experience — the bridge between the accessible DOM shell and the WebGL layer.
+ * Experience — the immersive layer.
  *
- * Progressive enhancement, strictly: the semantic atlas is already in the DOM
- * and fully usable. This mounts the universe as a fixed, decorative backdrop
- * BEHIND that content, and only when the browser actually supports WebGL. If it
- * doesn't (or JS never runs), nothing is lost — the shell stands on its own.
+ * When WebGL is available this becomes the whole experience: a fixed, full-
+ * viewport, interactive canvas with the hero overlay above it. The semantic
+ * atlas from Phase 0 remains in the DOM as the accessible/no-JS fallback — it is
+ * visually collapsed (but kept for screen readers and crawlers) via the
+ * `data-webgl` flag on <html>, which an inline script in the layout sets before
+ * first paint to avoid any flash of the fallback.
  *
- * The canvas is `aria-hidden` and non-interactive in Phase 1; it is ambience.
- * Pointer interaction and the drag-camera arrive in Phase 2.
+ * If WebGL is absent, this renders nothing and the fallback stands on its own.
  */
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { HeroOverlay } from "./HeroOverlay";
 
-// WebGL must never touch the server; load the canvas client-side only.
-const SceneCanvas = dynamic(() => import("@/three/core/SceneCanvas"), {
-  ssr: false,
-});
+const SceneCanvas = dynamic(() => import("@/three/core/SceneCanvas"), { ssr: false });
 
-/** Cheap, cached WebGL capability probe. */
 function detectWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");
@@ -36,18 +34,23 @@ export function Experience() {
   const [supported, setSupported] = useState(false);
 
   useEffect(() => {
-    setSupported(detectWebGL());
+    const ok = detectWebGL();
+    setSupported(ok);
+    // Keep the flag in sync with the inline pre-paint script.
+    document.documentElement.dataset.webgl = ok ? "on" : "off";
   }, []);
 
   if (!supported) return null;
 
   return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none fixed inset-0"
-      style={{ zIndex: "var(--z-canvas)" }}
-    >
-      <SceneCanvas />
-    </div>
+    <>
+      <div
+        className="fixed inset-0"
+        style={{ zIndex: "var(--z-scene)" }}
+      >
+        <SceneCanvas />
+      </div>
+      <HeroOverlay />
+    </>
   );
 }

@@ -54,6 +54,19 @@ export default function RootLayout({
   return (
     <html lang="en" style={rootCssVars as React.CSSProperties}>
       <body>
+        {/*
+         * Detect WebGL before first paint and flag <html>, so the immersive
+         * canvas takes over with no flash of the text fallback. Progressive
+         * enhancement: if this fails, the accessible atlas simply renders.
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var c=document.createElement('canvas');" +
+              "if(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl')))" +
+              "{document.documentElement.dataset.webgl='on'}}catch(e){}",
+          }}
+        />
         <a href="#atlas" className="skip-link">
           Skip to the atlas
         </a>

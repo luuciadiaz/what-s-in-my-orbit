@@ -1,15 +1,12 @@
 "use client";
 
 /**
- * Universe — composition of every ambient subsystem.
+ * Universe — composition of every subsystem.
  *
- * This is where the atlas's living backdrop is assembled: stars, dust, nebula,
- * constellations and golden orbit lines. Quality scales to the device tier —
- * heavy nebula shaders are dropped on low-end hardware to protect the frame
- * budget — and all motion collapses to stillness under reduced-motion.
- *
- * Phase 1 owns the ambience only. The camera (Phase 2) and planets (Phase 4+)
- * are added as siblings later; nothing here needs to change to accommodate them.
+ * The living backdrop (stars, dust, nebula, constellations, orbit lines) plus
+ * the planets themselves. Quality scales to the device tier; motion collapses
+ * to stillness under reduced motion. Planet selection is delegated up via
+ * `onSelect` so router navigation happens outside the WebGL reconciler.
  */
 import { useThree } from "@react-three/fiber";
 import type { TierBudget } from "@/hooks/useDeviceTier";
@@ -18,32 +15,25 @@ import { Dust } from "./Dust";
 import { Nebula } from "./Nebula";
 import { Constellations } from "./Constellations";
 import { OrbitLines } from "./OrbitLines";
+import { PlanetSystem } from "@/three/planets/PlanetSystem";
 
 interface UniverseProps {
   budget: TierBudget;
   reducedMotion: boolean;
+  onSelect: (slug: string) => void;
 }
 
-export function Universe({ budget, reducedMotion }: UniverseProps) {
-  // Clamp the DPR the shaders scale their point sizes by, matching the renderer.
+export function Universe({ budget, reducedMotion, onSelect }: UniverseProps) {
   const pixelRatio = Math.min(useThree((s) => s.viewport.dpr), budget.maxDpr);
 
   return (
     <group>
-      <Starfield
-        count={budget.particles}
-        pixelRatio={pixelRatio}
-        reducedMotion={reducedMotion}
-      />
-      <Dust
-        count={budget.particles}
-        pixelRatio={pixelRatio}
-        reducedMotion={reducedMotion}
-      />
-      {/* Nebula is the heaviest pass — only on tiers that can afford it. */}
+      <Starfield count={budget.particles} pixelRatio={pixelRatio} reducedMotion={reducedMotion} />
+      <Dust count={budget.particles} pixelRatio={pixelRatio} reducedMotion={reducedMotion} />
       {budget.allowHeavyShaders ? <Nebula reducedMotion={reducedMotion} /> : null}
       <Constellations reducedMotion={reducedMotion} />
-      <OrbitLines reducedMotion={reducedMotion} />
+      <OrbitLines />
+      <PlanetSystem reducedMotion={reducedMotion} onSelect={onSelect} />
     </group>
   );
 }

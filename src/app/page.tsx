@@ -1,42 +1,32 @@
 /**
  * ATLAS — the home experience.
  *
- * The living universe (Phase 1) is mounted as a fixed backdrop; the semantic,
- * accessible atlas from Phase 0 renders ABOVE it. The hero sits transparently
- * over the sky so the stars breathe behind the title, while the readable index
- * below rests on a solid ground for contrast. The WebGL enhances — it never
- * replaces — the DOM, so the experience degrades gracefully to the shell.
+ * Immersive-first: the interactive universe (planets you orbit, hover and enter)
+ * is the whole page. The Phase 0 semantic atlas is still rendered — it is the
+ * accessible / no-JS / crawlable fallback — but when WebGL is active it collapses
+ * to a screen-reader layer (`.fallback-atlas`) so the canvas takes the screen.
  */
 import { Experience } from "@/ui/experience/Experience";
 import { Hero } from "@/ui/atlas/Hero";
 import { OrbitList } from "@/ui/atlas/OrbitList";
 import { SkillsBelt } from "@/ui/atlas/SkillsBelt";
 import { OriginPanel } from "@/ui/atlas/OriginPanel";
-import { QuoteMark } from "@/ui/atlas/QuoteMark";
-import { quotes } from "@/content/quotes";
 
 export default function AtlasPage() {
   return (
     <>
+      {/* The immersive universe (mounts only when WebGL is supported). */}
       <Experience />
 
-      <main id="atlas" className="relative" style={{ zIndex: "var(--z-content)" }}>
-        {/* Hero breathes over the open sky. */}
-        <div className="relative">
+      {/* Accessible / no-JS fallback — collapsed to SR-only when WebGL is active. */}
+      <div className="fallback-atlas">
+        <main id="atlas" className="bg-bg">
           <Hero />
-          {/* A soft gradient hands the eye from sky to page. */}
-          <div className="pointer-events-none h-40 bg-gradient-to-b from-transparent to-bg" />
-        </div>
-
-        {/* The readable atlas index rests on solid ground for contrast. */}
-        <div className="bg-bg">
-          <QuoteMark quote={quotes[1]} />
           <OrbitList />
           <SkillsBelt />
           <OriginPanel />
-          <QuoteMark quote={quotes[0]} />
-        </div>
-      </main>
+        </main>
+      </div>
     </>
   );
 }
