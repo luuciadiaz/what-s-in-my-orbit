@@ -18,6 +18,8 @@ import { ConstellationFigures } from "./ConstellationFigures";
 import { OrbitLines } from "./OrbitLines";
 import { ZodiacWheel } from "./ZodiacWheel";
 import { PlanetSystem } from "@/three/planets/PlanetSystem";
+import { AsteroidBelt } from "@/three/skills/AsteroidBelt";
+import { CvArtifact } from "@/three/artifacts/CvArtifact";
 
 interface UniverseProps {
   budget: TierBudget;
@@ -38,6 +40,8 @@ export function Universe({ budget, reducedMotion, onSelect }: UniverseProps) {
       <ZodiacWheel reducedMotion={reducedMotion} />
       <OrbitLines />
       <PlanetSystem reducedMotion={reducedMotion} onSelect={onSelect} />
+      <AsteroidBelt reducedMotion={reducedMotion} />
+      <CvArtifact reducedMotion={reducedMotion} />
     </group>
   );
 }

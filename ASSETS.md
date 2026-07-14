@@ -25,20 +25,27 @@ Todo está pensado para que sueltes archivos y (a lo sumo) cambies una línea.
 
 - SVG o PNG transparente. Dime dónde quieres cada uno y lo coloco.
 
-## 4. Tipografías
+## 4. CV (curriculum)
+📁 `public/cv/`  ·  ⚙️ `src/content/skills.ts` (`cvArtifact`)
+
+- Reemplaza `public/cv/placeholder-cv.pdf` por tu CV real (mismo nombre, o
+  cambia `href`/`downloadName` en `cvArtifact`).
+- Se descarga al activar el instrumento celeste (armillar) en la escena.
+
+## 5. Tipografías
 📁 `public/fonts/`  ·  ⚙️ `src/config/fonts.ts`
 
 - `.woff2` (recomendado) o nombres de Google Fonts.
 - 4 roles: `display`, `heading`, `body`, `caption`. Dime qué va en cada uno.
 - Ver el README de esa carpeta.
 
-## 5. Colores
+## 6. Colores
 ⚙️ `src/config/colors.ts`
 
 - Toda la paleta vive ahí (pigmentos + roles + color por planeta). Cambiar un
   valor se propaga a toda la web.
 
-## 6. Textos
+## 7. Textos
 📁 `src/content/`
 
 - `hero`, `about`, `projects`, `skills`, `quotes`, `navigation` — edita el texto
