@@ -24,6 +24,35 @@ const HOME_TARGET = new THREE.Vector3(0, 0, 0);
 const EASE = `cubic-bezier(${easing.gravity.join(",")})`;
 
 const CONFIG = Object.fromEntries(PLANETS.map((p) => [p.slug, p]));
+const UP = new THREE.Vector3(0, 1, 0);
+
+/**
+ * Compute a cinematic shot for a world: where the camera flies to (`approach`)
+ * and where it looks (`look`). The look point is nudged so the planet settles
+ * into the right third of frame — editorial rule-of-thirds — leaving clean space
+ * on the left for the revealed text.
+ */
+function framingFor(slug: string, from: THREE.Vector3) {
+  const obj = getPlanetObject(slug);
+  const cfg = CONFIG[slug];
+  if (!obj || !cfg) return null;
+
+  const p = obj.getWorldPosition(new THREE.Vector3());
+  const effR = cfg.isCenter ? cfg.radius * 2 : cfg.radius;
+  const dist = Math.max(effR * 2.7, 4.2);
+  const dir = new THREE.Vector3().subVectors(from, p).normalize();
+  const approach = new THREE.Vector3().copy(p).addScaledVector(dir, dist);
+
+  // Shift the look point so the world drifts to screen-right and rises a touch.
+  const viewDir = new THREE.Vector3().subVectors(p, approach).normalize();
+  const right = new THREE.Vector3().crossVectors(viewDir, UP).normalize();
+  const look = new THREE.Vector3()
+    .copy(p)
+    .addScaledVector(right, -effR * 0.8)
+    .addScaledVector(UP, -effR * 0.28);
+
+  return { approach, look };
+}
 
 interface DirectorProps {
   reducedMotion: boolean;
@@ -58,16 +87,8 @@ export function CameraDirector({ reducedMotion }: DirectorProps) {
     };
 
     if (phase === "entering" && activePlanet) {
-      const obj = getPlanetObject(activePlanet);
-      const cfg = CONFIG[activePlanet];
-      if (!obj || !cfg) return;
-
-      const p = obj.getWorldPosition(new THREE.Vector3());
-      const effR = cfg.isCenter ? cfg.radius * 2 : cfg.radius;
-      const dist = Math.max(effR * 3.0, 4.5);
-      const dir = new THREE.Vector3().subVectors(camera.position, p).normalize();
-      const approach = new THREE.Vector3().copy(p).addScaledVector(dir, dist);
-      approach.y += effR * 0.4; // a touch of elevation for framing
+      const shot = framingFor(activePlanet, camera.position);
+      if (!shot) return;
 
       controls.enabled = false;
       controls.enableDamping = false;
@@ -75,12 +96,12 @@ export function CameraDirector({ reducedMotion }: DirectorProps) {
 
       tl.current = gsap
         .timeline({ onComplete: markArrived })
-        .to(camera.position, { x: approach.x, y: approach.y, z: approach.z, duration: dur, ease: EASE, onUpdate }, 0)
-        .to(target, { x: p.x, y: p.y, z: p.z, duration: dur, ease: EASE }, 0);
+        .to(camera.position, { x: shot.approach.x, y: shot.approach.y, z: shot.approach.z, duration: dur, ease: EASE, onUpdate }, 0)
+        .to(target, { x: shot.look.x, y: shot.look.y, z: shot.look.z, duration: dur, ease: EASE }, 0);
     } else if (phase === "active" && activePlanet) {
-      // Re-engage controls focused on the arrived world.
-      const obj = getPlanetObject(activePlanet);
-      if (obj) controls.target.copy(obj.getWorldPosition(new THREE.Vector3()));
+      // Re-engage controls on the framed look point (planet sits off-centre).
+      const shot = framingFor(activePlanet, camera.position);
+      if (shot) controls.target.copy(shot.look);
       controls.enabled = true;
       controls.enableDamping = true;
       controls.autoRotate = false;

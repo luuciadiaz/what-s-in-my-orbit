@@ -37,7 +37,7 @@ export function ZodiacWheel({ reducedMotion }: ZodiacWheelProps) {
       <meshBasicMaterial
         map={texture}
         transparent
-        opacity={0.5}
+        opacity={0.42}
         depthWrite={false}
         side={THREE.DoubleSide}
         blending={THREE.AdditiveBlending}

@@ -19,11 +19,12 @@ const ZODIAC = ["♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "
 export function zodiacWheelSvg({ gold, brass }: ZodiacColors): string {
   const parts: string[] = [];
 
-  // Concentric rings — an astrolabe's nested circles.
-  const rings = [500, 468, 360, 300, 214, 150];
+  // A restrained set of nested circles — the rim band plus one inner ring, so
+  // the wheel frames the system without competing with the planets' orbits.
+  const rings = [500, 468, 214];
   rings.forEach((r, i) => {
     parts.push(
-      `<circle cx="${C}" cy="${C}" r="${r}" fill="none" stroke="${gold}" stroke-width="${i < 2 ? 3 : 1.4}" opacity="${i < 2 ? 0.9 : 0.4}"/>`,
+      `<circle cx="${C}" cy="${C}" r="${r}" fill="none" stroke="${gold}" stroke-width="${i < 2 ? 3 : 1.4}" opacity="${i < 2 ? 0.85 : 0.32}"/>`,
     );
   });
 
