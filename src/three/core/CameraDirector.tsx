@@ -17,6 +17,7 @@ import gsap from "gsap";
 import * as THREE from "three";
 import { PLANETS } from "@/config/planets";
 import { useAtlas, getPlanetObject, markArrived, markReturned } from "@/state/atlasStore";
+import { useIntroPhase } from "@/state/introStore";
 import { duration as DUR, easing } from "@/config/motion";
 
 const HOME_POS = new THREE.Vector3(0, 6, 30);
@@ -72,10 +73,13 @@ export function CameraDirector({ reducedMotion }: DirectorProps) {
     | null;
   const invalidate = useThree((s) => s.invalidate);
   const { phase, activePlanet } = useAtlas();
+  const introPhase = useIntroPhase();
   const tl = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
     if (!controls) return;
+    // The intro camera owns the camera until the curtain is fully open.
+    if (introPhase !== "open") return;
     tl.current?.kill();
 
     const dur = reducedMotion ? DUR.fast : DUR.cinematic;
@@ -127,7 +131,7 @@ export function CameraDirector({ reducedMotion }: DirectorProps) {
     return () => {
       tl.current?.kill();
     };
-  }, [phase, activePlanet, controls, camera, invalidate, reducedMotion]);
+  }, [phase, activePlanet, controls, camera, invalidate, reducedMotion, introPhase]);
 
   return null;
 }

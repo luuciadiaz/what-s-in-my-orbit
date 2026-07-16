@@ -14,7 +14,7 @@
  */
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { HeroOverlay } from "./HeroOverlay";
+import { CurtainIntro } from "./CurtainIntro";
 import { AtlasGrade } from "./AtlasGrade";
 import { ProjectReveal } from "./ProjectReveal";
 import { SoundToggle } from "@/ui/sound/SoundToggle";
@@ -54,9 +54,10 @@ export function Experience() {
         <SceneCanvas />
       </div>
       <AtlasGrade />
-      <HeroOverlay />
       <ProjectReveal />
       <SoundToggle />
+      {/* The theatrical opening — above everything, sets the title itself. */}
+      <CurtainIntro />
     </>
   );
 }

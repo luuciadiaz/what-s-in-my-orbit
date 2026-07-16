@@ -21,6 +21,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useCoarsePointer } from "@/hooks/useCoarsePointer";
 import { Universe } from "@/three/universe/Universe";
 import { CameraDirector } from "./CameraDirector";
+import { IntroCamera } from "./IntroCamera";
 import { enterPlanet } from "@/state/atlasStore";
 import { audioEngine } from "@/audio/AudioEngine";
 
@@ -38,7 +39,7 @@ export default function SceneCanvas() {
     <Canvas
       dpr={[1, budget.maxDpr]}
       frameloop={reducedMotion ? "demand" : "always"}
-      camera={{ position: [0, 6, 30], fov: 55, near: 0.1, far: 300 }}
+      camera={{ position: [0, 10, 62], fov: 55, near: 0.1, far: 300 }}
       gl={{ antialias: budget.tier === "high", alpha: false, powerPreference: "high-performance" }}
       onCreated={({ gl, scene }) => {
         gl.setClearColor(new THREE.Color("#05070f"), 1);
@@ -51,6 +52,7 @@ export default function SceneCanvas() {
       }}
     >
       <Universe budget={budget} reducedMotion={reducedMotion} coarse={coarse} onSelect={selectWorld} />
+      <IntroCamera reducedMotion={reducedMotion} />
       <CameraDirector reducedMotion={reducedMotion} />
 
       <OrbitControls
@@ -62,7 +64,9 @@ export default function SceneCanvas() {
         zoomSpeed={0.7}
         minDistance={5}
         maxDistance={60}
-        autoRotate={!reducedMotion}
+        // Auto-rotate is enabled imperatively by IntroCamera once the curtain
+        // is open, so it never runs during the opening dolly.
+        autoRotate={false}
         autoRotateSpeed={0.18}
         target={[0, 0, 0]}
       />
