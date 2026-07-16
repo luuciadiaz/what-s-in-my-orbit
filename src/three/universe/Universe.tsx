@@ -3,19 +3,15 @@
 /**
  * Universe — composition of every subsystem.
  *
- * The living backdrop (stars, dust, nebula, constellations, orbit lines) plus
- * the planets themselves. Quality scales to the device tier; motion collapses
- * to stillness under reduced motion. Planet selection is delegated up via
- * `onSelect` so router navigation happens outside the WebGL reconciler.
+ * The sky itself is now a real frescoed texture set as the scene background (see
+ * SceneCanvas); this layer holds the moving, three-dimensional matter over it:
+ * foreground dust, the gilded zodiac wheel and orbit lines, the planets, the
+ * asteroid belt and the CV artifact. Quality scales to the device tier; motion
+ * collapses to stillness under reduced motion.
  */
 import { useThree } from "@react-three/fiber";
 import type { TierBudget } from "@/hooks/useDeviceTier";
-import { Starfield } from "./Starfield";
 import { Dust } from "./Dust";
-import { Nebula } from "./Nebula";
-import { Constellations } from "./Constellations";
-import { ConstellationFigures } from "./ConstellationFigures";
-import { GoldStars } from "./GoldStars";
 import { OrbitLines } from "./OrbitLines";
 import { ZodiacWheel } from "./ZodiacWheel";
 import { PlanetSystem } from "@/three/planets/PlanetSystem";
@@ -35,12 +31,8 @@ export function Universe({ budget, reducedMotion, coarse, onSelect }: UniversePr
 
   return (
     <group>
-      <Starfield count={budget.particles} pixelRatio={pixelRatio} reducedMotion={reducedMotion} />
+      {/* Subtle foreground motes for parallax over the frescoed sky. */}
       <Dust count={budget.particles} pixelRatio={pixelRatio} reducedMotion={reducedMotion} />
-      {budget.allowHeavyShaders ? <Nebula reducedMotion={reducedMotion} /> : null}
-      <Constellations reducedMotion={reducedMotion} />
-      <ConstellationFigures />
-      <GoldStars />
       <ZodiacWheel reducedMotion={reducedMotion} />
       <OrbitLines />
       <PlanetSystem reducedMotion={reducedMotion} coarse={coarse} budget={budget} onSelect={onSelect} />

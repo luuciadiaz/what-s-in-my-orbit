@@ -19,7 +19,6 @@ import * as THREE from "three";
 import { useDeviceTier } from "@/hooks/useDeviceTier";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useCoarsePointer } from "@/hooks/useCoarsePointer";
-import { palette } from "@/config/colors";
 import { Universe } from "@/three/universe/Universe";
 import { CameraDirector } from "./CameraDirector";
 import { enterPlanet } from "@/state/atlasStore";
@@ -42,8 +41,15 @@ export default function SceneCanvas() {
       camera={{ position: [0, 6, 30], fov: 55, near: 0.1, far: 300 }}
       gl={{ antialias: budget.tier === "high", alpha: false, powerPreference: "high-performance" }}
       onCreated={({ gl, scene }) => {
-        gl.setClearColor(new THREE.Color(palette.midnight), 1);
-        scene.fog = new THREE.FogExp2(new THREE.Color(palette.midnightDeep), 0.006);
+        // Ultramarine tone matched to the frescoed sky; distant matter fades
+        // into the same blue rather than to black.
+        gl.setClearColor(new THREE.Color("#17265c"), 1);
+        scene.fog = new THREE.FogExp2(new THREE.Color("#1b2e6e"), 0.004);
+        // The sky itself: the frescoed blue-and-gold texture as the background.
+        new THREE.TextureLoader().load("/art/sky-bg.png", (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          scene.background = tex;
+        });
       }}
     >
       <Universe budget={budget} reducedMotion={reducedMotion} coarse={coarse} onSelect={selectWorld} />

@@ -40,10 +40,16 @@ export function HeroOverlay() {
         opacity: visible ? 1 : 0,
       }}
     >
-      <h1 className="font-display text-display leading-[1.02] tracking-tight text-ink drop-shadow-[0_2px_30px_rgba(0,0,0,0.6)]">
+      <h1
+        className="font-display text-display leading-[1.02] tracking-tight text-ink"
+        style={{ textShadow: "0 2px 18px rgba(7,13,40,0.95), 0 0 40px rgba(7,13,40,0.8)" }}
+      >
         {hero.title}
       </h1>
-      <p className="mt-6 font-caption text-small uppercase tracking-[0.28em] text-gold">
+      <p
+        className="mt-6 font-caption text-small uppercase tracking-[0.28em] text-gold-bright"
+        style={{ textShadow: "0 1px 10px rgba(7,13,40,0.95)" }}
+      >
         {coarse ? hero.invitationTouch : hero.invitation}
       </p>
     </div>

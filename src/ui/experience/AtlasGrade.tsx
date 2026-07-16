@@ -20,11 +20,13 @@ export function AtlasGrade() {
         zIndex: "var(--z-content)",
         backgroundImage: [
           // gold bloom from the central sun
-          "radial-gradient(circle at 50% 52%, rgba(224,192,103,0.16), transparent 40%)",
-          // dusty-pink wash rising from below
-          "radial-gradient(120% 80% at 50% 108%, rgba(201,160,160,0.12), transparent 60%)",
-          // deep ultramarine vignette to the edges
-          "radial-gradient(ellipse at center, transparent 52%, rgba(7,11,26,0.7) 100%)",
+          "radial-gradient(circle at 50% 52%, rgba(224,192,103,0.14), transparent 42%)",
+          // a light deep-ultramarine veil to settle the fresco back and lift
+          // contrast for the planets and type
+          "linear-gradient(rgba(9,17,50,0.34), rgba(9,17,50,0.34))",
+          // deep-ultramarine vignette (matched to the fresco) — soft, so the
+          // painted blue and its texture stay visible to the edges
+          "radial-gradient(ellipse at center, transparent 58%, rgba(11,20,58,0.55) 100%)",
           // paper grain
           GRAIN,
         ].join(","),
