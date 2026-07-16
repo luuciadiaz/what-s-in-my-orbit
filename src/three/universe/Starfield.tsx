@@ -1,19 +1,19 @@
 "use client";
 
 /**
- * Starfield — the breathing sky.
+ * Starfield — a deep, realistic night sky.
  *
- * A seeded cloud of soft points distributed through a spherical shell around the
- * camera, so depth feels infinite in every direction. Count is set by the device
- * tier. Under reduced motion the field is rendered once and frozen — still, but
- * present. Colours are drawn from the palette, never invented here.
+ * A dense cloud of stars distributed through a spherical shell around the
+ * camera, with wide variation in size and brightness (a few luminous foreground
+ * stars among thousands of faint distant ones) and subtle white / blue-white /
+ * warm tints — the density and depth of a long-exposure sky, kept elegant.
+ * Parallaxes as the camera moves, so the field reads as true space, not a flat
+ * image. Count scales to the device tier; still under reduced motion.
  */
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { SeededRandom, SEEDS } from "@/lib/seededRandom";
-import { palette } from "@/config/colors";
-import { starfieldVertex, starfieldFragment } from "./shaders/starfield.glsl";
 
 interface StarfieldProps {
   count: number;
@@ -21,33 +21,70 @@ interface StarfieldProps {
   reducedMotion: boolean;
 }
 
-/** Warm tints stars are drawn from — the light of an antique chart. */
-const STAR_TINTS = [palette.ivory, palette.goldBright, palette.dustyPinkSoft];
+// Realistic star tints: mostly white, some blue-white, a few warm.
+const TINTS = ["#ffffff", "#eaf1ff", "#cdddff", "#fff4e0", "#ffe9c8"];
+
+const VERT = /* glsl */ `
+  attribute float aSize;
+  attribute float aPhase;
+  attribute vec3 aColor;
+  uniform float uTime;
+  uniform float uPixelRatio;
+  uniform float uTwinkle;
+  varying vec3 vColor;
+  varying float vTw;
+  void main() {
+    vColor = aColor;
+    float t = sin(uTime * 0.8 + aPhase) * 0.5 + 0.5;
+    vTw = mix(1.0 - uTwinkle, 1.0, t);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = aSize * uPixelRatio * (260.0 / -mv.z);
+  }
+`;
+
+const FRAG = /* glsl */ `
+  precision mediump float;
+  varying vec3 vColor;
+  varying float vTw;
+  void main() {
+    vec2 uv = gl_PointCoord - 0.5;
+    float d = length(uv);
+    if (d > 0.5) discard;
+    // Sharp core + soft halo, like a real point source.
+    float core = smoothstep(0.5, 0.0, d);
+    float halo = smoothstep(0.5, 0.28, d);
+    float alpha = (core * 0.7 + halo * 0.3) * vTw;
+    gl_FragColor = vec4(vColor, alpha);
+  }
+`;
 
 export function Starfield({ count, pixelRatio, reducedMotion }: StarfieldProps) {
-  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const matRef = useRef<THREE.ShaderMaterial>(null);
 
   const geometry = useMemo(() => {
     const rng = new SeededRandom(SEEDS.stars);
-    const positions = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-    const phases = new Float32Array(count);
-    const colors = new Float32Array(count * 3);
+    const n = Math.floor(count * 1.6); // denser than before for realism
+    const positions = new Float32Array(n * 3);
+    const sizes = new Float32Array(n);
+    const phases = new Float32Array(n);
+    const colors = new Float32Array(n * 3);
     const tint = new THREE.Color();
 
-    for (let i = 0; i < count; i++) {
-      // Distribute on a spherical shell (radius 30–90) for endless depth.
-      const r = rng.range(30, 90);
+    for (let i = 0; i < n; i++) {
+      const r = rng.range(24, 110);
       const theta = rng.range(0, Math.PI * 2);
       const phi = Math.acos(rng.signed(1));
       positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = r * Math.cos(phi);
 
-      sizes[i] = rng.range(0.6, 2.4);
+      // Mostly small faint stars, a rare few large & bright.
+      const roll = rng.float();
+      sizes[i] = roll > 0.97 ? rng.range(2.6, 4.2) : roll > 0.85 ? rng.range(1.2, 2.2) : rng.range(0.4, 1.0);
       phases[i] = rng.range(0, Math.PI * 2);
 
-      tint.set(rng.pick(STAR_TINTS));
+      tint.set(rng.pick(TINTS));
       colors[i * 3] = tint.r;
       colors[i * 3 + 1] = tint.g;
       colors[i * 3 + 2] = tint.b;
@@ -65,23 +102,23 @@ export function Starfield({ count, pixelRatio, reducedMotion }: StarfieldProps) 
     () => ({
       uTime: { value: 0 },
       uPixelRatio: { value: pixelRatio },
-      uTwinkle: { value: reducedMotion ? 0 : 0.5 },
+      uTwinkle: { value: reducedMotion ? 0 : 0.35 },
     }),
     [pixelRatio, reducedMotion],
   );
 
   useFrame((_, delta) => {
-    if (reducedMotion || !materialRef.current) return;
-    materialRef.current.uniforms.uTime.value += delta;
+    if (reducedMotion || !matRef.current) return;
+    matRef.current.uniforms.uTime.value += delta;
   });
 
   return (
     <points geometry={geometry}>
       <shaderMaterial
-        ref={materialRef}
+        ref={matRef}
         uniforms={uniforms}
-        vertexShader={starfieldVertex}
-        fragmentShader={starfieldFragment}
+        vertexShader={VERT}
+        fragmentShader={FRAG}
         transparent
         depthWrite={false}
         blending={THREE.AdditiveBlending}

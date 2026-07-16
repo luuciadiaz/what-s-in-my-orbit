@@ -11,6 +11,8 @@
  */
 import { useThree } from "@react-three/fiber";
 import type { TierBudget } from "@/hooks/useDeviceTier";
+import { Starfield } from "./Starfield";
+import { Nebula } from "./Nebula";
 import { Dust } from "./Dust";
 import { OrbitLines } from "./OrbitLines";
 import { ZodiacWheel } from "./ZodiacWheel";
@@ -31,7 +33,9 @@ export function Universe({ budget, reducedMotion, coarse, onSelect }: UniversePr
 
   return (
     <group>
-      {/* Subtle foreground motes for parallax over the frescoed sky. */}
+      {/* The realistic deep-space sky. */}
+      <Starfield count={budget.particles} pixelRatio={pixelRatio} reducedMotion={reducedMotion} />
+      {budget.allowHeavyShaders ? <Nebula reducedMotion={reducedMotion} /> : null}
       <Dust count={budget.particles} pixelRatio={pixelRatio} reducedMotion={reducedMotion} />
       <ZodiacWheel reducedMotion={reducedMotion} />
       <OrbitLines />

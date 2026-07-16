@@ -41,15 +41,10 @@ export default function SceneCanvas() {
       camera={{ position: [0, 6, 30], fov: 55, near: 0.1, far: 300 }}
       gl={{ antialias: budget.tier === "high", alpha: false, powerPreference: "high-performance" }}
       onCreated={({ gl, scene }) => {
-        // Ultramarine tone matched to the frescoed sky; distant matter fades
-        // into the same blue rather than to black.
-        gl.setClearColor(new THREE.Color("#17265c"), 1);
-        scene.fog = new THREE.FogExp2(new THREE.Color("#1b2e6e"), 0.004);
-        // The sky itself: the frescoed blue-and-gold texture as the background.
-        new THREE.TextureLoader().load("/art/sky-bg.png", (tex) => {
-          tex.colorSpace = THREE.SRGBColorSpace;
-          scene.background = tex;
-        });
+        // Deep midnight-blue space; the realistic starfield + nebula supply the
+        // sky. Distant matter fades into the same deep blue, giving depth.
+        gl.setClearColor(new THREE.Color("#05070f"), 1);
+        scene.fog = new THREE.FogExp2(new THREE.Color("#0a1330"), 0.0018);
       }}
     >
       <Universe budget={budget} reducedMotion={reducedMotion} coarse={coarse} onSelect={selectWorld} />

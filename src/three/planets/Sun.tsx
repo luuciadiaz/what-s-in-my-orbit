@@ -48,6 +48,15 @@ export function Sun({ config, active, reducedMotion, paused, onHover, onActivate
   const bodyTex = useMemo(() => svgTexture(sunBodySvg(colors)), []); // eslint-disable-line react-hooks/exhaustive-deps
   const faceTex = useMemo(() => svgTexture(sunFaceSvg(colors)), []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Radiant halo so the gilded sun reads as a luminous star in realistic space.
+  const glowTex = useMemo(
+    () =>
+      svgTexture(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><defs><radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${palette.goldBright}" stop-opacity="0.7"/><stop offset="35%" stop-color="${palette.gold}" stop-opacity="0.28"/><stop offset="100%" stop-color="${palette.gold}" stop-opacity="0"/></radialGradient></defs><circle cx="128" cy="128" r="128" fill="url(#g)"/></svg>`,
+      ),
+    [],
+  );
+
   const size = config.radius * 3.7;
 
   useFrame((_, delta) => {
@@ -63,6 +72,12 @@ export function Sun({ config, active, reducedMotion, paused, onHover, onActivate
   return (
     <Billboard>
       <group ref={swellRef}>
+        {/* Radiant halo behind the sun. */}
+        <mesh position={[0, 0, -0.05]} scale={size * 2.1}>
+          <planeGeometry args={[1, 1]} />
+          <meshBasicMaterial map={glowTex} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+        </mesh>
+
         {/* Corona + gilded disc (turning) */}
         <mesh
           ref={bodyRef}

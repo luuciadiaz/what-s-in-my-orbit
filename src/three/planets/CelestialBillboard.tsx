@@ -100,8 +100,8 @@ export function CelestialBillboard({ config, active, reducedMotion, paused, onHo
       uShadow: { value: new THREE.Color("#0e1a40") },
       uMid: { value: new THREE.Color(config.colorCore) },
       uHi: { value: new THREE.Color(config.colorGlow).lerp(new THREE.Color(palette.ivory), 0.5) },
-      // The gilded Sun already fits; only recolour the planets.
-      uStylize: { value: config.isCenter ? 0 : 0.82 },
+      // Realistic universe: planets keep their photographic colour (no duotone).
+      uStylize: { value: 0 },
     }),
     [texture, ratio, config.colorCore, config.colorGlow, config.isCenter],
   );
