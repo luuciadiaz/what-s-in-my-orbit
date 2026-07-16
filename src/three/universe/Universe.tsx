@@ -15,6 +15,7 @@ import { Dust } from "./Dust";
 import { Nebula } from "./Nebula";
 import { Constellations } from "./Constellations";
 import { ConstellationFigures } from "./ConstellationFigures";
+import { GoldStars } from "./GoldStars";
 import { OrbitLines } from "./OrbitLines";
 import { ZodiacWheel } from "./ZodiacWheel";
 import { PlanetSystem } from "@/three/planets/PlanetSystem";
@@ -39,6 +40,7 @@ export function Universe({ budget, reducedMotion, coarse, onSelect }: UniversePr
       {budget.allowHeavyShaders ? <Nebula reducedMotion={reducedMotion} /> : null}
       <Constellations reducedMotion={reducedMotion} />
       <ConstellationFigures />
+      <GoldStars />
       <ZodiacWheel reducedMotion={reducedMotion} />
       <OrbitLines />
       <PlanetSystem reducedMotion={reducedMotion} coarse={coarse} budget={budget} onSelect={onSelect} />
