@@ -41,10 +41,13 @@ export default function SceneCanvas() {
       camera={{ position: [0, 6, 30], fov: 55, near: 0.1, far: 300 }}
       gl={{ antialias: budget.tier === "high", alpha: false, powerPreference: "high-performance" }}
       onCreated={({ gl, scene }) => {
-        // Deep midnight-blue space; the realistic starfield + nebula supply the
-        // sky. Distant matter fades into the same deep blue, giving depth.
         gl.setClearColor(new THREE.Color("#05070f"), 1);
-        scene.fog = new THREE.FogExp2(new THREE.Color("#0a1330"), 0.0018);
+        scene.fog = new THREE.FogExp2(new THREE.Color("#0a1330"), 0.0016);
+        // The sky is the real starfield photograph (its stars, its colours).
+        new THREE.TextureLoader().load("/art/sky-background.jpg", (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          scene.background = tex;
+        });
       }}
     >
       <Universe budget={budget} reducedMotion={reducedMotion} coarse={coarse} onSelect={selectWorld} />
