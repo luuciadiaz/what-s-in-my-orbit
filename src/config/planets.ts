@@ -39,6 +39,8 @@ export interface PlanetConfig {
   hasRing: boolean;
   /** The centre world is fixed and self-luminous. */
   isCenter: boolean;
+  /** Optional real art in /public/art/planets; when set, rendered as a billboard. */
+  texture?: string;
 }
 
 /** Tuning per discipline — dynamics chosen to echo each planet's character. */
@@ -58,6 +60,16 @@ const ORBIT_TUNING: Record<
   saturn: { radius: 1.3, orbitRadius: 26, orbitTilt: 0.52, startAngle: 1.1, orbitSpeed: 0.012, spinSpeed: 0.16, hasRing: true },
 };
 
+/** Real art filenames in /public/art/planets (swap freely). */
+const TEXTURES: Record<string, string> = {
+  origin: "sun.webp",
+  mercury: "mercury.jpeg",
+  venus: "venus.webp",
+  mars: "mars.webp",
+  jupiter: "jupiter.webp",
+  // saturn: pending file on disk — stays procedural (with rings) until added.
+};
+
 /** Origin — the centre world where About/Contact live. */
 const origin: PlanetConfig = {
   slug: "origin",
@@ -74,6 +86,7 @@ const origin: PlanetConfig = {
   spinSpeed: 0.06,
   hasRing: false,
   isCenter: true,
+  texture: TEXTURES.origin,
 };
 
 /** The orbiting disciplines, derived from project content + tuning. */
@@ -89,6 +102,7 @@ const disciplines: PlanetConfig[] = projects.map((p) => {
     colorGlow: colors.glow,
     ...t,
     isCenter: false,
+    texture: TEXTURES[p.planet],
   };
 });
 
