@@ -15,6 +15,7 @@ import { useFrame } from "@react-three/fiber";
 import { Billboard, Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { PlanetConfig } from "@/config/planets";
+import { palette } from "@/config/colors";
 import { svgTexture } from "@/three/lib/svgTexture";
 import { registerPlanet, unregisterPlanet } from "@/state/atlasStore";
 import { setHovering } from "@/state/cursorStore";
@@ -43,7 +44,11 @@ const FRAG = /* glsl */ `
   precision mediump float;
   varying vec2 vUv;
   uniform sampler2D uMap;
-  uniform float uRatio; // imgHeight / imgWidth
+  uniform float uRatio;   // imgHeight / imgWidth
+  uniform vec3 uShadow;   // gradient-map dark tone (shared, painterly)
+  uniform vec3 uMid;      // planet's signature mid tone
+  uniform vec3 uHi;       // gilded highlight
+  uniform float uStylize; // 0 = photo, 1 = full antique duotone
   void main() {
     vec2 p = vUv - 0.5;
     p.y *= uRatio;
@@ -55,7 +60,13 @@ const FRAG = /* glsl */ `
     float chroma = mx - mn;
     float keyMask = smoothstep(0.04, 0.10, chroma);
 
-    gl_FragColor = vec4(tex.rgb, tex.a * circle * keyMask);
+    // Gradient map: keep the photo's luminance detail, recolour into the
+    // antique palette so the planet reads as an engraved plate, not a photo.
+    float l = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
+    vec3 grad = l < 0.5 ? mix(uShadow, uMid, l * 2.0) : mix(uMid, uHi, (l - 0.5) * 2.0);
+    vec3 col = mix(tex.rgb, grad, uStylize);
+
+    gl_FragColor = vec4(col, tex.a * circle * keyMask);
   }
 `;
 
@@ -82,8 +93,17 @@ export function CelestialBillboard({ config, active, reducedMotion, paused, onHo
   }, [config.colorGlow]);
 
   const uniforms = useMemo(
-    () => ({ uMap: { value: texture }, uRatio: { value: ratio } }),
-    [texture, ratio],
+    () => ({
+      uMap: { value: texture },
+      uRatio: { value: ratio },
+      // Shared painterly shadow; per-planet mid; gilded highlight.
+      uShadow: { value: new THREE.Color("#0e1a40") },
+      uMid: { value: new THREE.Color(config.colorCore) },
+      uHi: { value: new THREE.Color(config.colorGlow).lerp(new THREE.Color(palette.ivory), 0.5) },
+      // The gilded Sun already fits; only recolour the planets.
+      uStylize: { value: config.isCenter ? 0 : 0.82 },
+    }),
+    [texture, ratio, config.colorCore, config.colorGlow, config.isCenter],
   );
   uniforms.uRatio.value = ratio;
 
