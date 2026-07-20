@@ -1,110 +1,205 @@
 /**
  * PLANET CONFIGURATION
  *
- * The physical composition of the atlas: Origin as a luminous world at the
- * centre, the five disciplines orbiting it on the golden rings. Every visual
- * and motion property lives here — nothing about a planet is hardcoded in the
- * scene. Swapping the illustrated look later means changing colours/radii here,
- * not touching the components.
+ * The physical composition of the atlas: five discipline-worlds, with Brand
+ * Strategy as the large planet at the centre and the others orbiting it. Every
+ * visual and motion property lives here — nothing about a planet is hardcoded in
+ * the scene, so re-styling a world means editing ONE entry below (its colours,
+ * surface style, size, orbit), never a component or shader.
+ *
+ * Surface colours read low → high: for rocky worlds that is ocean → land →
+ * highland (plus polar ice); for gas giants it is the dark → mid → light bands.
  *
  * Motion values are intentionally slow (celestial mechanics, not animation).
  */
 
-import { planetColors } from "./colors";
-import { projects } from "@/content/projects";
-import { about } from "@/content/about";
-import type { Glyph } from "@/content/types";
+import { projectBySlug } from "@/content/projects";
+
+/**
+ * A single off-scene sun lights every planet, so day/night is consistent. It
+ * sits up-and-right but mostly toward the viewer, so every world keeps a lit,
+ * visible face (a gentle terminator on the lower-left limb) wherever it orbits —
+ * matching the storyboard, where no planet falls into full silhouette.
+ */
+export const SUN_DIRECTION: [number, number, number] = [0.34, 0.42, 0.84];
+
+export interface PlanetSurface {
+  /** "rocky" = oceans/land/ice; "gas" = banded atmosphere. */
+  style: "rocky" | "gas";
+  /** Oceans / darkest bands. */
+  colorLow: string;
+  /** Land / mid bands. */
+  colorMid: string;
+  /** Highlands / lightest bands. */
+  colorHigh: string;
+  /** Ice caps (rocky only). */
+  colorPole: string;
+  /** Feature frequency — higher = smaller, busier features. */
+  noiseScale: number;
+  /** 0 → soft, 1 → sharp contrast between features. */
+  contrast: number;
+  /** Any number — changes the continents/bands without touching anything else. */
+  seed: number;
+}
+
+export interface RingConfig {
+  /** Inner/outer radius as a multiple of the planet radius. */
+  inner: number;
+  outer: number;
+  color: string;
+  /** Ring plane tilt (radians). */
+  tilt: number;
+}
 
 export interface PlanetConfig {
   slug: string;
   label: string;
   discipline: string;
-  glyph: Glyph;
-  /** Palette-driven surface + glow colours. */
-  colorCore: string;
-  colorGlow: string;
   /** Sphere radius in scene units. */
   radius: number;
-  /** Distance from Origin. 0 = the centre world. */
+  /** Distance from the centre. 0 = the centre world. */
   orbitRadius: number;
   /** Tilt of this planet's orbital plane (radians). */
   orbitTilt: number;
   /** Starting angle on the orbit (radians). */
   startAngle: number;
-  /** Revolution speed around Origin (radians/sec). */
+  /** Revolution speed around the centre (radians/sec). */
   orbitSpeed: number;
   /** Axial spin speed (radians/sec). */
   spinSpeed: number;
-  /** Saturn wears rings. */
-  hasRing: boolean;
-  /** The centre world is fixed and self-luminous. */
+  /** The centre world sits still at the origin. */
   isCenter: boolean;
-  /** Optional real art in /public/art/planets; when set, rendered as a billboard. */
-  texture?: string;
+  /** Fresnel atmosphere-rim colour. */
+  atmosphere: string;
+  /** Procedural surface definition. */
+  surface: PlanetSurface;
+  /** Optional drifting cloud veil (rocky worlds). */
+  clouds?: boolean;
+  /** Optional ring system (gas giants). */
+  ring?: RingConfig;
 }
 
-/** Tuning per discipline — dynamics chosen to echo each planet's character. */
-const ORBIT_TUNING: Record<
-  string,
-  Pick<PlanetConfig, "radius" | "orbitRadius" | "orbitTilt" | "startAngle" | "orbitSpeed" | "spinSpeed" | "hasRing">
-> = {
-  // ☿ fast, small, dynamic
-  mercury: { radius: 0.55, orbitRadius: 7, orbitTilt: 0.34, startAngle: 0.4, orbitSpeed: 0.055, spinSpeed: 0.5, hasRing: false },
-  // ♀ soft, warm, unhurried
-  venus: { radius: 0.95, orbitRadius: 10.5, orbitTilt: 0.26, startAngle: 2.1, orbitSpeed: 0.04, spinSpeed: 0.18, hasRing: false },
-  // ♂ bold, contrasty
-  mars: { radius: 0.72, orbitRadius: 14, orbitTilt: 0.44, startAngle: 4.0, orbitSpeed: 0.03, spinSpeed: 0.3, hasRing: false },
-  // ♃ massive, slow, grand
-  jupiter: { radius: 1.7, orbitRadius: 19.5, orbitTilt: 0.3, startAngle: 5.4, orbitSpeed: 0.018, spinSpeed: 0.12, hasRing: false },
-  // ♄ precise geometry, beautiful rings
-  saturn: { radius: 1.3, orbitRadius: 26, orbitTilt: 0.52, startAngle: 1.1, orbitSpeed: 0.012, spinSpeed: 0.16, hasRing: true },
-};
-
-/** Real art filenames in /public/art/planets (swap freely). */
-const TEXTURES: Record<string, string> = {
-  origin: "sun.webp",
-  mercury: "mercury.jpeg",
-  venus: "venus.webp",
-  mars: "mars.webp",
-  jupiter: "jupiter.webp",
-  // saturn: pending file on disk — stays procedural (with rings) until added.
-};
-
-/** Origin — the centre world where About/Contact live. */
-const origin: PlanetConfig = {
-  slug: "origin",
-  label: about.title,
-  discipline: about.subtitle,
-  glyph: about.glyph,
-  colorCore: planetColors.origin.core,
-  colorGlow: planetColors.origin.glow,
-  radius: 1.9,
-  orbitRadius: 0,
-  orbitTilt: 0,
-  startAngle: 0,
-  orbitSpeed: 0,
-  spinSpeed: 0.06,
-  hasRing: false,
-  isCenter: true,
-  texture: TEXTURES.origin,
-};
-
-/** The orbiting disciplines, derived from project content + tuning. */
-const disciplines: PlanetConfig[] = projects.map((p) => {
-  const t = ORBIT_TUNING[p.planet];
-  const colors = planetColors[p.planet];
-  return {
-    slug: p.slug,
-    label: p.title,
-    discipline: p.discipline,
-    glyph: p.glyph,
-    colorCore: colors.core,
-    colorGlow: colors.glow,
-    ...t,
+/**
+ * The five worlds. Order = order of discovery. Edit any block to restyle a
+ * planet — colours and `surface` fully define its look.
+ */
+const WORLDS: Omit<PlanetConfig, "label" | "discipline">[] = [
+  {
+    // Brand Strategy & Creative Direction — the blue-grey giant at the centre.
+    slug: "brand-strategy",
+    radius: 2.0,
+    orbitRadius: 0,
+    orbitTilt: 0,
+    startAngle: 0,
+    orbitSpeed: 0,
+    spinSpeed: 0.05,
+    isCenter: true,
+    atmosphere: "#6f9fd6",
+    clouds: true,
+    surface: {
+      style: "rocky",
+      colorLow: "#16324f",
+      colorMid: "#4a6076",
+      colorHigh: "#9aacbe",
+      colorPole: "#e2ebf3",
+      noiseScale: 3.0,
+      contrast: 0.55,
+      seed: 12.3,
+    },
+  },
+  {
+    // Events — warm beige desert world. (upper-left)
+    slug: "events",
+    radius: 0.95,
+    orbitRadius: 10,
+    orbitTilt: 0.48,
+    startAngle: 2.6,
+    orbitSpeed: 0,
+    spinSpeed: 0.28,
     isCenter: false,
-    texture: TEXTURES[p.planet],
-  };
-});
+    atmosphere: "#e8d9b8",
+    surface: {
+      style: "rocky",
+      colorLow: "#8a6f45",
+      colorMid: "#bd9d6a",
+      colorHigh: "#e2cd9e",
+      colorPole: "#efe7d3",
+      noiseScale: 4.2,
+      contrast: 0.6,
+      seed: 4.1,
+    },
+  },
+  {
+    // PR — soft rose world. (lower-left)
+    slug: "pr",
+    radius: 0.86,
+    orbitRadius: 12,
+    orbitTilt: 0.18,
+    startAngle: 4.2,
+    orbitSpeed: 0,
+    spinSpeed: 0.3,
+    isCenter: false,
+    atmosphere: "#eaa7b6",
+    surface: {
+      style: "rocky",
+      colorLow: "#9a4f5c",
+      colorMid: "#c87c8a",
+      colorHigh: "#ecbcc5",
+      colorPole: "#f7e4e8",
+      noiseScale: 3.4,
+      contrast: 0.4,
+      seed: 8.8,
+    },
+  },
+  {
+    // Content & Social Media — the ringed golden gas giant. (upper-right)
+    slug: "content-social",
+    radius: 1.3,
+    orbitRadius: 15,
+    orbitTilt: 0.48,
+    startAngle: 0.22,
+    orbitSpeed: 0,
+    spinSpeed: 0.14,
+    isCenter: false,
+    atmosphere: "#e7c979",
+    surface: {
+      style: "gas",
+      colorLow: "#9c7736",
+      colorMid: "#c9a24b",
+      colorHigh: "#efdba0",
+      colorPole: "#efdba0",
+      noiseScale: 9.0,
+      contrast: 0.5,
+      seed: 21.0,
+    },
+    ring: { inner: 1.45, outer: 2.55, color: "#d8c48a", tilt: 0.34 },
+  },
+  {
+    // Campaigns — verdant world. (lower-right)
+    slug: "campaigns",
+    radius: 1.0,
+    orbitRadius: 13,
+    orbitTilt: 0.26,
+    startAngle: 5.8,
+    orbitSpeed: 0,
+    spinSpeed: 0.2,
+    isCenter: false,
+    atmosphere: "#79c48f",
+    surface: {
+      style: "rocky",
+      colorLow: "#1f4d39",
+      colorMid: "#3f7a55",
+      colorHigh: "#8cbb81",
+      colorPole: "#ddefda",
+      noiseScale: 3.4,
+      contrast: 0.55,
+      seed: 15.6,
+    },
+  },
+];
 
-/** Every world in the atlas. Origin first, then outward. */
-export const PLANETS: PlanetConfig[] = [origin, ...disciplines];
+/** Every world, with label/discipline pulled from content (single source). */
+export const PLANETS: PlanetConfig[] = WORLDS.map((w) => {
+  const project = projectBySlug[w.slug];
+  return { ...w, label: project.title, discipline: project.discipline };
+});

@@ -38,7 +38,7 @@ export function IntroCamera({ reducedMotion }: { reducedMotion: boolean }) {
       controls.target.copy(ORIGIN);
       controls.enabled = true;
       controls.enableDamping = true;
-      controls.autoRotate = !reducedMotion;
+      controls.autoRotate = false; // fixed composition; visitor drags to look
       controls.update();
     } else {
       controls.enabled = false;

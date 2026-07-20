@@ -124,7 +124,7 @@ export function CameraDirector({ reducedMotion }: DirectorProps) {
       controls.target.copy(HOME_TARGET);
       controls.enabled = true;
       controls.enableDamping = true;
-      controls.autoRotate = !reducedMotion;
+      controls.autoRotate = false; // fixed composition; visitor drags to look
       controls.update();
     }
 

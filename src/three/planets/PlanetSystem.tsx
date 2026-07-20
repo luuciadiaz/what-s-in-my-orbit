@@ -18,8 +18,6 @@ import { PLANETS } from "@/config/planets";
 import type { TierBudget } from "@/hooks/useDeviceTier";
 import { useAtlas } from "@/state/atlasStore";
 import { Planet } from "./Planet";
-import { Sun } from "./Sun";
-import { CelestialBillboard } from "./CelestialBillboard";
 
 interface PlanetSystemProps {
   reducedMotion: boolean;
@@ -57,14 +55,7 @@ export function PlanetSystem({ reducedMotion, coarse, budget, onSelect }: Planet
           onHover: setHovered,
           onActivate: activate,
         };
-        if (config.texture) {
-          return <CelestialBillboard key={config.slug} {...shared} />;
-        }
-        return config.isCenter ? (
-          <Sun key={config.slug} {...shared} />
-        ) : (
-          <Planet key={config.slug} {...shared} segments={segments} />
-        );
+        return <Planet key={config.slug} {...shared} segments={segments} />;
       })}
     </group>
   );

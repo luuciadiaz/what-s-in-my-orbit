@@ -1,17 +1,18 @@
 "use client";
 
 /**
- * OrbitLines — the golden tracks the planets travel.
+ * OrbitLines — the faint tracks the planets travel.
  *
  * One ring per orbiting world, derived directly from the planet config so a
  * planet always sits ON its line. Each ring inherits its planet's orbital tilt.
- * Thin gold, faint, near-imperceptibly alive — the structure that tells the eye
- * this space is composed, not empty.
+ * Thin, cool-white and faint — the structure that tells the eye this space is
+ * composed, not empty, without competing with the worlds.
  */
 import { useMemo } from "react";
 import * as THREE from "three";
-import { palette } from "@/config/colors";
 import { PLANETS } from "@/config/planets";
+
+const ORBIT_COLOR = "#b9c6d6";
 
 const SEGMENTS = 240;
 
@@ -28,12 +29,12 @@ function Ring({ radius, tilt }: { radius: number; tilt: number }) {
   }, [radius]);
 
   // Fainter as rings grow, so the composition recedes into depth.
-  const opacity = Math.max(0.12, 0.5 - radius * 0.012);
+  const opacity = Math.max(0.1, 0.34 - radius * 0.008);
 
   return (
     <lineLoop geometry={geometry} rotation={[tilt, 0, 0]}>
       <lineBasicMaterial
-        color={palette.gold}
+        color={ORBIT_COLOR}
         transparent
         opacity={opacity}
         blending={THREE.AdditiveBlending}
