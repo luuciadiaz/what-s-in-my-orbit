@@ -4,11 +4,12 @@
  * CurtainIntro — the theatrical opening.
  *
  * A heavy painterly curtain fills the screen with the title. After a cinematic
- * pause it parts: each half slides toward its side while GATHERING (scaling in
- * toward the outer edge with an organic warp filter) — not a flat translate, but
- * fabric drawing aside under its own weight. It leaves thin drapes framing the
- * universe. The parting drives `introProgress`, which the 3D camera reads to
- * dolly forward "through" the curtain into space. The title fades as it opens.
+ * pause it parts — not as two flat halves sliding aside, but as fabric that
+ * GATHERS: the WebGL {@link CurtainStage} compresses each panel's cloth toward
+ * its edge behind a drooping, rippling leading edge. The same tween drives
+ * `introProgress`, which the 3D camera reads to dolly forward "through" the
+ * parting into space, so the curtain opens *while* we zoom into the universe.
+ * The title, an ordinary DOM overlay for crisp type, fades as it opens.
  *
  * Under reduced motion the curtain is skipped entirely.
  */
@@ -16,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { hero } from "@/content/hero";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { CurtainStage } from "@/three/core/CurtainStage";
 import {
   beginOpening,
   finishOpening,
@@ -24,13 +26,9 @@ import {
   useIntroPhase,
 } from "@/state/introStore";
 
-const CURTAIN = "/art/curtain.jpeg";
-
 export function CurtainIntro() {
   const reducedMotion = useReducedMotion();
   const phase = useIntroPhase();
-  const leftRef = useRef<HTMLDivElement>(null);
-  const rightRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const [skipped, setSkipped] = useState(false);
 
@@ -41,19 +39,11 @@ export function CurtainIntro() {
       return;
     }
 
-    const apply = (p: number) => {
-      const gather = 1 - 0.42 * p;
-      const shift = 46 * p; // vw each half travels toward its side
-      const sway = Math.sin(p * Math.PI) * 1.5; // subtle fabric sway
-      if (leftRef.current)
-        leftRef.current.style.transform = `translateX(${-shift}vw) scaleX(${gather}) skewX(${sway}deg)`;
-      if (rightRef.current)
-        rightRef.current.style.transform = `translateX(${shift}vw) scaleX(${gather}) skewX(${-sway}deg)`;
-      if (titleRef.current) {
-        const t = Math.min(1, p / 0.55);
-        titleRef.current.style.opacity = String(1 - t);
-        titleRef.current.style.transform = `translateY(${-t * 2}rem) scale(${1 + t * 0.06})`;
-      }
+    const fadeTitle = (p: number) => {
+      if (!titleRef.current) return;
+      const t = Math.min(1, p / 0.5); // fully gone by the time it is half open
+      titleRef.current.style.opacity = String(1 - t);
+      titleRef.current.style.transform = `translateY(${-t * 2}rem) scale(${1 + t * 0.06})`;
     };
 
     const proxy = { p: 0 };
@@ -65,7 +55,7 @@ export function CurtainIntro() {
       onStart: beginOpening,
       onUpdate: () => {
         setIntroProgress(proxy.p);
-        apply(proxy.p);
+        fadeTitle(proxy.p);
       },
       onComplete: finishOpening,
     });
@@ -74,7 +64,7 @@ export function CurtainIntro() {
     };
   }, [reducedMotion]);
 
-  if (skipped) return null;
+  if (skipped || phase === "open") return null;
 
   return (
     <div
@@ -82,55 +72,21 @@ export function CurtainIntro() {
       className="pointer-events-none fixed inset-0 overflow-hidden"
       style={{ zIndex: "var(--z-loader)" }}
     >
-      {/* Organic warp so the flat painting reads as heavy cloth. */}
-      <svg width="0" height="0" style={{ position: "absolute" }}>
-        <filter id="curtain-warp">
-          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.03" numOctaves="2" seed="7" result="n">
-            <animate attributeName="baseFrequency" dur="14s" values="0.008 0.03;0.012 0.028;0.008 0.03" repeatCount="indefinite" />
-          </feTurbulence>
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
-
-      <div
-        ref={leftRef}
-        className="absolute left-0 top-0 h-full w-1/2"
-        style={{
-          backgroundImage: `url(${CURTAIN})`,
-          backgroundSize: "100vw 100vh",
-          backgroundPosition: "0 0",
-          transformOrigin: "left center",
-          filter: "url(#curtain-warp)",
-          willChange: "transform",
-        }}
-      />
-      <div
-        ref={rightRef}
-        className="absolute right-0 top-0 h-full w-1/2"
-        style={{
-          backgroundImage: `url(${CURTAIN})`,
-          backgroundSize: "100vw 100vh",
-          backgroundPosition: "-50vw 0",
-          transformOrigin: "right center",
-          filter: "url(#curtain-warp)",
-          willChange: "transform",
-        }}
-      />
+      {/* The fluid velvet, gathering aside in WebGL. */}
+      <CurtainStage />
 
       {/* Title, centred on the curtain, fading as it opens. */}
-      {phase !== "open" ? (
-        <div
-          ref={titleRef}
-          className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+      <div
+        ref={titleRef}
+        className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+      >
+        <h1
+          className="font-display text-display leading-[1.02] tracking-tight text-ink"
+          style={{ textShadow: "0 2px 26px rgba(4,8,26,0.95), 0 0 60px rgba(4,8,26,0.9)" }}
         >
-          <h1
-            className="font-display text-display leading-[1.02] tracking-tight text-ink"
-            style={{ textShadow: "0 2px 26px rgba(4,8,26,0.95), 0 0 60px rgba(4,8,26,0.9)" }}
-          >
-            {hero.title}
-          </h1>
-        </div>
-      ) : null}
+          {hero.title}
+        </h1>
+      </div>
     </div>
   );
 }
