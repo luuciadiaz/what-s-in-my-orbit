@@ -180,7 +180,10 @@ export function Planet({ config, active, reducedMotion, paused, segments, onHove
             {active ? (
               <Html center distanceFactor={18} position={[0, config.radius + 0.9, 0]} pointerEvents="none">
                 <div className="pointer-events-none select-none whitespace-nowrap text-center">
-                  <div className="font-caption text-[0.82rem] uppercase tracking-[0.26em] text-ink">
+                  <div
+                    className="font-hand text-[1.55rem] leading-none tracking-wide text-ink"
+                    style={{ textShadow: "0 1px 10px rgba(7,13,40,0.95), 0 0 22px rgba(7,13,40,0.7)" }}
+                  >
                     {config.discipline}
                   </div>
                 </div>

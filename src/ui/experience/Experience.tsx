@@ -16,6 +16,8 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { CurtainIntro } from "./CurtainIntro";
 import { AtlasGrade } from "./AtlasGrade";
+import { FocusVeil } from "./FocusVeil";
+import { Navbar } from "./Navbar";
 import { ProjectReveal } from "./ProjectReveal";
 import { SoundToggle } from "@/ui/sound/SoundToggle";
 
@@ -54,6 +56,10 @@ export function Experience() {
         <SceneCanvas />
       </div>
       <AtlasGrade />
+      {/* The universe recedes when a world is focused or entered. */}
+      <FocusVeil />
+      {/* One quiet line of chrome — signature + discipline shortcuts. */}
+      <Navbar />
       <ProjectReveal />
       <SoundToggle />
       {/* The theatrical opening — above everything, sets the title itself. */}

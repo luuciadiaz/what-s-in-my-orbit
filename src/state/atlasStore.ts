@@ -23,9 +23,11 @@ export type AtlasPhase = "idle" | "entering" | "active" | "leaving";
 interface AtlasState {
   phase: AtlasPhase;
   activePlanet: string | null;
+  /** The world currently under attention while idle (hover / first tap). */
+  focused: string | null;
 }
 
-let state: AtlasState = { phase: "idle", activePlanet: null };
+let state: AtlasState = { phase: "idle", activePlanet: null, focused: null };
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -58,6 +60,26 @@ export function leavePlanet() {
 /** Called by the camera director once the flight out completes. */
 export function markReturned() {
   setState({ phase: "idle", activePlanet: null });
+}
+
+/** Note which world is under attention while exploring (hover / first tap). */
+export function setFocused(slug: string | null) {
+  if (state.focused !== slug) setState({ focused: slug });
+}
+
+/** Imperative snapshot for the render loop (no React re-render on read). */
+export function getAtlas(): AtlasState {
+  return state;
+}
+
+/** The universe recedes when a world is focused or being entered. */
+export function isUniverseDimmed(s: AtlasState = state): boolean {
+  return s.focused !== null || s.phase !== "idle";
+}
+
+/** The single world under the spotlight while dimmed (or null). */
+export function spotlitPlanet(s: AtlasState = state): string | null {
+  return s.phase !== "idle" ? s.activePlanet : s.focused;
 }
 
 function subscribe(listener: () => void) {

@@ -42,6 +42,8 @@ const config: Config = {
         heading: [`var(${fontFamilies.heading.var})`],
         body: [`var(${fontFamilies.body.var})`],
         caption: [`var(${fontFamilies.caption.var})`],
+        // Handwritten voice — wired via next/font (Caveat) in the app layout.
+        hand: ["var(--font-hand)", "'Segoe Script'", "cursive"],
       },
       // The type scale — wired from config/fonts.ts so `text-*` utilities exist.
       fontSize,

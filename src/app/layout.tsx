@@ -13,10 +13,23 @@
  */
 
 import type { Metadata, Viewport } from "next";
+import { Caveat } from "next/font/google";
 import { rootCssVars } from "@/config/tokens";
 import { hero } from "@/content/hero";
 import { Cursor } from "@/ui/cursor/Cursor";
 import "./globals.css";
+
+/**
+ * Handwritten voice — used for the world labels and the navbar signature, so
+ * the atlas is annotated by a human hand. Populates `--font-hand`, which the
+ * token contract (config/fonts) and Tailwind (`font-hand`) read.
+ */
+const handwritten = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-hand",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -53,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" style={rootCssVars as React.CSSProperties}>
+    <html lang="en" className={handwritten.variable} style={rootCssVars as React.CSSProperties}>
       <body>
         {/*
          * Detect WebGL before first paint and flag <html>, so the immersive

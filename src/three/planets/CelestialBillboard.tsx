@@ -18,7 +18,7 @@ import { Billboard, Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { PlanetConfig } from "@/config/planets";
 import { svgTexture } from "@/three/lib/svgTexture";
-import { registerPlanet, unregisterPlanet } from "@/state/atlasStore";
+import { registerPlanet, unregisterPlanet, getAtlas, isUniverseDimmed, spotlitPlanet } from "@/state/atlasStore";
 import { setHovering } from "@/state/cursorStore";
 import { audioEngine } from "@/audio/AudioEngine";
 
@@ -46,13 +46,14 @@ const FRAG = /* glsl */ `
   precision mediump float;
   varying vec2 vUv;
   uniform sampler2D uMap;
+  uniform float uDim; // 1 = full; <1 recedes when another world is focused
   void main() {
     vec4 tex = texture2D(uMap, vUv);
     float l = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
     float lumKey = smoothstep(0.02, 0.09, l);
     float r = length(vUv - 0.5);
     float circle = 1.0 - smoothstep(0.45, 0.5, r);
-    gl_FragColor = vec4(tex.rgb, tex.a * lumKey * circle);
+    gl_FragColor = vec4(tex.rgb * uDim, tex.a * lumKey * circle);
   }
 `;
 
@@ -83,6 +84,7 @@ export function CelestialBillboard({ config, active, reducedMotion, paused, onHo
   const uniforms = useMemo(
     () => ({
       uMap: { value: texture },
+      uDim: { value: 1 },
     }),
     [texture],
   );
@@ -101,6 +103,10 @@ export function CelestialBillboard({ config, active, reducedMotion, paused, onHo
       const t = active ? 1.1 : 1;
       swellRef.current.scale.lerp(new THREE.Vector3(t, t, t), 0.12);
     }
+    // Recede when another world holds the spotlight.
+    const st = getAtlas();
+    const target = !isUniverseDimmed(st) || spotlitPlanet(st) === config.slug ? 1 : 0.3;
+    uniforms.uDim.value += (target - uniforms.uDim.value) * Math.min(1, delta * 4);
   });
 
   // Disk fills ~0.88 of the padded texture, so this width makes the visible disk
@@ -152,7 +158,12 @@ export function CelestialBillboard({ config, active, reducedMotion, paused, onHo
               {active ? (
                 <Html center distanceFactor={18} position={[0, h * 0.5 + 0.5, 0]} pointerEvents="none">
                   <div className="pointer-events-none select-none whitespace-nowrap text-center">
-                    <div className="font-caption text-[0.82rem] uppercase tracking-[0.26em] text-ink">{config.discipline}</div>
+                    <div
+                      className="font-hand text-[1.55rem] leading-none tracking-wide text-ink"
+                      style={{ textShadow: "0 1px 10px rgba(7,13,40,0.95), 0 0 22px rgba(7,13,40,0.7)" }}
+                    >
+                      {config.discipline}
+                    </div>
                   </div>
                 </Html>
               ) : null}

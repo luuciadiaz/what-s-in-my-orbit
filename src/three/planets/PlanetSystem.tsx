@@ -13,10 +13,10 @@
  * router context survives the WebGL reconciler boundary). Mesh detail scales to
  * the device tier.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PLANETS } from "@/config/planets";
 import type { TierBudget } from "@/hooks/useDeviceTier";
-import { useAtlas } from "@/state/atlasStore";
+import { useAtlas, setFocused as publishFocus } from "@/state/atlasStore";
 import { Planet } from "./Planet";
 import { CelestialBillboard } from "./CelestialBillboard";
 
@@ -37,6 +37,11 @@ export function PlanetSystem({ reducedMotion, coarse, budget, onSelect }: Planet
   const segments = SEGMENTS[budget.tier];
 
   const isActive = (slug: string) => (coarse ? focused === slug : hovered === slug);
+
+  // Publish the attended world so the universe can recede around it.
+  useEffect(() => {
+    publishFocus(coarse ? focused : hovered);
+  }, [coarse, focused, hovered]);
 
   // Fine pointer: enter on click. Coarse: reveal on first tap, enter on second.
   const activate = (slug: string) => {

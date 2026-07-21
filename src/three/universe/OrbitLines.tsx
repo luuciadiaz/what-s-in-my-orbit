@@ -8,9 +8,11 @@
  * Thin, cool-white and faint — the structure that tells the eye this space is
  * composed, not empty, without competing with the worlds.
  */
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PLANETS } from "@/config/planets";
+import { getAtlas, isUniverseDimmed } from "@/state/atlasStore";
 
 const ORBIT_COLOR = "#b9c6d6";
 
@@ -30,10 +32,19 @@ function Ring({ radius, tilt }: { radius: number; tilt: number }) {
 
   // Fainter as rings grow, so the composition recedes into depth.
   const opacity = Math.max(0.1, 0.34 - radius * 0.008);
+  const matRef = useRef<THREE.LineBasicMaterial>(null);
+
+  // Fade the tracks down when a world takes the spotlight.
+  useFrame((_, delta) => {
+    if (!matRef.current) return;
+    const target = opacity * (isUniverseDimmed(getAtlas()) ? 0.22 : 1);
+    matRef.current.opacity += (target - matRef.current.opacity) * Math.min(1, delta * 4);
+  });
 
   return (
     <lineLoop geometry={geometry} rotation={[tilt, 0, 0]}>
       <lineBasicMaterial
+        ref={matRef}
         color={ORBIT_COLOR}
         transparent
         opacity={opacity}
