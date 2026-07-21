@@ -92,12 +92,12 @@ export interface PlanetConfig {
  * rings, so its procedural ring is dropped when the photo is used.
  */
 const TEXTURES: Record<string, string> = {
-  "brand-strategy": "jupiter.webp", // the giant at the centre
+  "brand-strategy": "sun.webp", // the luminous centre — home of the CV / intro
   events: "mars.webp",
   pr: "venus.webp",
   "content-social": "saturn.webp", // real rings
   campaigns: "mercury.webp",
-  // spare on disk: sun.webp
+  // spare on disk: jupiter.webp
 };
 
 /**
