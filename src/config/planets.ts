@@ -77,7 +77,28 @@ export interface PlanetConfig {
   clouds?: boolean;
   /** Optional ring system (gas giants). */
   ring?: RingConfig;
+  /**
+   * Optional real photograph in /public/art/planets. When set, the world is
+   * drawn as a billboard from the photo (real Drive imagery, colours intact)
+   * instead of the procedural surface — see TEXTURES below to reassign.
+   */
+  texture?: string;
 }
+
+/**
+ * Real planet photographs (in /public/art/planets), mapped per discipline.
+ * Swap a filename to move a photo to a different world; delete an entry to send
+ * that world back to its procedural surface. Saturn's photo already carries its
+ * rings, so its procedural ring is dropped when the photo is used.
+ */
+const TEXTURES: Record<string, string> = {
+  "brand-strategy": "jupiter.webp", // the giant at the centre
+  events: "mars.webp",
+  pr: "venus.webp",
+  "content-social": "saturn.webp", // real rings
+  campaigns: "mercury.webp",
+  // spare on disk: sun.webp
+};
 
 /**
  * The five worlds. Order = order of discovery. Edit any block to restyle a
@@ -201,5 +222,9 @@ const WORLDS: Omit<PlanetConfig, "label" | "discipline">[] = [
 /** Every world, with label/discipline pulled from content (single source). */
 export const PLANETS: PlanetConfig[] = WORLDS.map((w) => {
   const project = projectBySlug[w.slug];
-  return { ...w, label: project.title, discipline: project.discipline };
+  const texture = TEXTURES[w.slug];
+  // A photograph supplies its own body (and, for Saturn, its own rings), so drop
+  // the procedural ring when a texture is in play.
+  const ring = texture ? undefined : w.ring;
+  return { ...w, ring, texture, label: project.title, discipline: project.discipline };
 });

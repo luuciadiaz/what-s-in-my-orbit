@@ -15,10 +15,15 @@ Todo está pensado para que sueltes archivos y (a lo sumo) cambies una línea.
 ## 2. Texturas de planetas
 📁 `public/art/planets/`  ·  ⚙️ `src/config/planets.ts`
 
-- PNG/JPG **equirectangular** (proporción 2:1, p. ej. 2048×1024) para que
-  envuelva la esfera.
-- Dime el archivo por planeta (`mercury`, `venus`, `mars`, `jupiter`, `saturn`,
-  `origin`) y lo cableo al shader. (Hoy los planetas son grabados procedurales.)
+- Cada mundo puede usar una **fotografía real** (esfera iluminada sobre fondo
+  oscuro, en `.webp`) o quedarse como esfera 3D procedural. El mapa `TEXTURES`
+  en `src/config/planets.ts` decide qué foto va en cada disciplina:
+  `brand-strategy`, `events`, `pr`, `content-social`, `campaigns`.
+- Para mover una foto: cambia el nombre en `TEXTURES`. Para volver un mundo a
+  procedural: borra su entrada. Los colores de la foto se respetan tal cual (el
+  shader solo recorta el fondo oscuro por luminancia). Saturno ya trae sus
+  anillos en la foto, así que su anillo procedural se desactiva.
+- Fotos cuadradas, planeta centrado sobre negro (Saturno puede llevar anillos).
 
 ## 3. Sol central / ornamentos (soles secundarios, querubines, cartelas)
 📁 `public/art/ornaments/`

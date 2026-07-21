@@ -18,6 +18,7 @@ import { PLANETS } from "@/config/planets";
 import type { TierBudget } from "@/hooks/useDeviceTier";
 import { useAtlas } from "@/state/atlasStore";
 import { Planet } from "./Planet";
+import { CelestialBillboard } from "./CelestialBillboard";
 
 interface PlanetSystemProps {
   reducedMotion: boolean;
@@ -55,7 +56,13 @@ export function PlanetSystem({ reducedMotion, coarse, budget, onSelect }: Planet
           onHover: setHovered,
           onActivate: activate,
         };
-        return <Planet key={config.slug} {...shared} segments={segments} />;
+        // Worlds with a real photograph render as billboards; the rest stay
+        // procedural 3D spheres.
+        return config.texture ? (
+          <CelestialBillboard key={config.slug} {...shared} />
+        ) : (
+          <Planet key={config.slug} {...shared} segments={segments} />
+        );
       })}
     </group>
   );
